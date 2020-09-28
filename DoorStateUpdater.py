@@ -94,7 +94,7 @@ def readTelegramId():
             myId=idfile.read().rstrip()
     except IOError:
         myId=''
-        print 'No registered users'
+        print 'File "myId.txt" not found.'
     return myId
 
 # ------------------------------------------------------------------------------
@@ -204,7 +204,7 @@ gpio3 = BooleanSignalOutput()
 gpio3.initialize(3, False)
 
 if '' == myTelegramId:
-    print 'Internal telegram id not found'
+    print 'Internal telegram id not found. Create a file "myId.txt" containing the ID of the bot.'
 else:
 
     bot = telepot.Bot(myTelegramId)
