@@ -118,6 +118,7 @@ class UserHandler:
         with open('./registeredIds.txt', 'w') as f:
             for user in self.m_users:
                 f.write(str(user) + '\n')
+                print 'Registered user: ' + str(user)
 
     def loadList(self):
         try:
@@ -125,6 +126,7 @@ class UserHandler:
                 usersList = idfile.readlines()
                 for user in usersList:
                     self.addUser(int(user.rstrip()))
+                    print 'Registered user: ' + str(user.rstrip())
         except IOError:
             print 'No registered users'
 
@@ -187,7 +189,7 @@ class BooleanSignalOutput:
 
 
 # Main program
-VersionNumber='V01.03 B02'
+VersionNumber='V01.03 B03'
 #VersionNumber='V01.02'
 
 myTelegramId = readTelegramId()
