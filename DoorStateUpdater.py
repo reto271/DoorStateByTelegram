@@ -5,6 +5,7 @@ import datetime
 import telepot
 
 from gpiozero import Button
+from gpiozero import LED
 from time import sleep
 
 # Print version and infos at startup
@@ -13,20 +14,24 @@ def versionAndUsage(bot, chatId):
     print(VersionNumber)
     print('')
     print('Send the following messages to the bot:')
-    print('   T: to get the current time.')
-    print('   R: to register yourself. You will get state updates.')
-    print('   D: poll the current door state.')
-    print('   H: print this help.')
+    print('   T: to get the current TIME.')
+    print('   R: to REGISTER yourself. You will get state updates.')
+    print('   G: GET the current door state.')
+    print('   C: CLOSE the door.')
+    print('   O: OPEN the door.')
+    print('   H: print this HELP.')
     print('')
     print('(c) by reto271')
     print('')
     if '' != bot:
         bot.sendMessage(chatId, 'Door State Updater\n\n' + VersionNumber +
                         '\n\nSend the following messages to the bot:\n' +
-                        '   T: to get the current time.\n' +
-                        '   R: to register yourself. You will get state updates.\n' +
-                        '   D: poll the current door state.\n' +
-                        '   H: print this help.\n' +
+                        '   T: to get the current TIME.\n' +
+                        '   R: to REGISTER yourself. You will get state updates.\n' +
+                        '   G: GET the current door state.\n' +
+                        '   C: CLOSE the door.\n' +
+                        '   O: OPEN the door.\n' +
+                        '   H: print this HELP.\n' +
                         '\n(c) by reto271\n')
 
 
@@ -38,8 +43,8 @@ def handle(msg):
     #print 'Got cmd: %s' % command
     if command == 'T':
         bot.sendMessage(chat_id, str(datetime.datetime.now()))
-    elif command == 'D':
-        if False == gpio2.getState():
+    elif command == 'G':
+        if True == gpio2.getState():
             print('Door open')
             bot.sendMessage(chat_id, 'Door state: open')
         else:
@@ -52,6 +57,17 @@ def handle(msg):
         myUserHandler.addUser(msg['chat']['id'])
         myUserHandler.storeList()
         bot.sendMessage(msg['chat']['id'],"Your ID is saved. State updates will be sent automatically.")
+    elif command == 'C':
+        if True == gpio2.getState():
+            bot.sendMessage(chat_id, 'Door closing...')
+        else:
+            bot.sendMessage(chat_id, 'Door is already closed.')
+    elif command == 'O':
+        if False == gpio2.getState():
+            bot.sendMessage(chat_id, 'Door opening...')
+        else:
+            bot.sendMessage(chat_id, 'Door is already open.')
+
 
 
 # Periodically polls the inputs and sends status updates
@@ -64,9 +80,9 @@ def sendStateUpdate():
         for userId in userList:
             print 'Update user with id: ' + str(userId)
             if True == gpio2.getState():
-                bot.sendMessage(userId, '-> Door state: closed')
-            else:
                 bot.sendMessage(userId, '-> Door state: open')
+            else:
+                bot.sendMessage(userId, '-> Door state: closed')
 
 
 # Reads the telegram Id of this bot from myId.txt
@@ -116,7 +132,7 @@ class UserHandler:
 
 # ------------------------------------------------------------------------------
 # Boolean signal encapsulation
-class BooleanSignal:
+class BooleanSignalInput:
     m_state = False
     m_lastState = False
     m_botton = []
@@ -141,6 +157,29 @@ class BooleanSignal:
         return self.m_state
 
 
+# ------------------------------------------------------------------------------
+# Boolean signal encapsulation
+class BooleanSignalOutput:
+    m_output = []
+    m_requestImpulse = False
+    m_sendImpulse = False
+
+    def initialize(self, gpioNumber, initValue):
+        self.m_output = LED(gpioNumber)
+        self.m_output.off()
+
+    def sendImpulse(self):
+        m_requestImpulse = True
+
+    def processOutput(self):
+        if True == self.m_requestImpulse:
+            self.m_output.on()
+            self.m_requestImpulse = False
+            self.m_sendImpulse = True
+
+        if True == self.m_sendImpulse:
+            self.m_output.off()
+            self.m_sendImpulse = False
 
 # Main program
 VersionNumber='V01.03 B01'
@@ -151,8 +190,11 @@ myTelegramId = readTelegramId()
 myUserHandler = UserHandler()
 myUserHandler.loadList()
 
-gpio2 = BooleanSignal()
+gpio2 = BooleanSignalInput()
 gpio2.initialize(2)
+
+gpio3 = BooleanSignalOutput()
+gpio3.initialize(3, False)
 
 if '' == myTelegramId:
     print 'Internal telegram id not found'
