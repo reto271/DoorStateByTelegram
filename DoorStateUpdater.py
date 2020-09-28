@@ -93,8 +93,8 @@ def readTelegramId():
 
 
 # Main program
-#VersionNumber='V01.01 B01'
-VersionNumber='V01.01'
+VersionNumber='V01.02 B01'
+#VersionNumber='V01.01'
 pollInputs.oldGpioInput = 2
 myTelegramId = readTelegramId()
 
