@@ -189,7 +189,7 @@ class BooleanSignalOutput:
 
 
 # Main program
-VersionNumber='V01.04 B01'
+VersionNumber='V01.04 B02'
 #VersionNumber='V01.03'
 
 myTelegramId = readTelegramId()
