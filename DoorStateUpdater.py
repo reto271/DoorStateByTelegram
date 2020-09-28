@@ -60,11 +60,13 @@ def handle(msg):
     elif command == 'C':
         if True == gpio2.getState():
             bot.sendMessage(chat_id, 'Door closing...')
+            gpio3.sendImpulse()
         else:
             bot.sendMessage(chat_id, 'Door is already closed.')
     elif command == 'O':
         if False == gpio2.getState():
             bot.sendMessage(chat_id, 'Door opening...')
+            gpio3.sendImpulse()
         else:
             bot.sendMessage(chat_id, 'Door is already open.')
 
@@ -169,20 +171,23 @@ class BooleanSignalOutput:
         self.m_output.off()
 
     def sendImpulse(self):
-        m_requestImpulse = True
+        self.m_requestImpulse = True
 
     def processOutput(self):
+        if True == self.m_sendImpulse:
+            print 'Output off'
+            self.m_output.off()
+            self.m_sendImpulse = False
+
         if True == self.m_requestImpulse:
+            print 'Output on'
             self.m_output.on()
             self.m_requestImpulse = False
             self.m_sendImpulse = True
 
-        if True == self.m_sendImpulse:
-            self.m_output.off()
-            self.m_sendImpulse = False
 
 # Main program
-VersionNumber='V01.03 B01'
+VersionNumber='V01.03 B02'
 #VersionNumber='V01.02'
 
 myTelegramId = readTelegramId()
@@ -210,5 +215,6 @@ else:
     while 1:
         time.sleep(1)
         gpio2.sample()
+        gpio3.processOutput()
         if (True == gpio2.isChanged()):
             sendStateUpdate()
