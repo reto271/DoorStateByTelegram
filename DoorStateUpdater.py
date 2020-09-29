@@ -195,7 +195,7 @@ class OutputPulseHandler:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.04 B03'
+VersionNumber='V01.04 B04'
 #VersionNumber='V01.03'
 
 myTelegramId = readTelegramId()
@@ -203,13 +203,13 @@ myTelegramId = readTelegramId()
 myUserHandler = UserHandler()
 myUserHandler.loadList()
 
-# Use GPIO 2
+# Use GPIO 23
 m_doorStateInput = BooleanSignalInput()
-m_doorStateInput.initialize(2)
+m_doorStateInput.initialize(23)
 
-# Use GPIO 3
+# Use GPIO 24
 m_doorMovementOutput = OutputPulseHandler()
-m_doorMovementOutput.initialize(3, False)
+m_doorMovementOutput.initialize(24, False)
 
 if '' == myTelegramId:
     print 'Internal telegram id not found. Create a file "myId.txt" containing the ID of the bot.'
