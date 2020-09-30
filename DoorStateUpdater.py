@@ -27,12 +27,22 @@ def versionAndUsage(bot, chatId):
 
 
 # ------------------------------------------------------------------------------
+# Message log
+def addMsgLogEntry(firstName, lastName, usrId, command):
+    print (str(datetime.datetime.now()) +
+           ' [' + firstName + ' ' + lastName + '] ' +
+           str(usrId) +
+           ' : ' + command)
+
+
+# ------------------------------------------------------------------------------
 # Message handler for the bot
 def handle(msg):
     chatId = msg['chat']['id']
     command = msg['text']
 
-    print msg
+    #print msg
+    addMsgLogEntry(msg['from']['first_name'], msg['from']['last_name'], chatId, command)
 
     #print 'Got cmd: %s' % command
     if command == 'T':
@@ -47,22 +57,23 @@ def handle(msg):
     elif command == 'H':
         versionAndUsage(bot, chatId)
     elif command == 'R':
-        print('Register')
         myUserHandler.addUser(msg['chat']['id'])
         myUserHandler.storeList()
-        bot.sendMessage(msg['chat']['id'],"Your ID is saved. State updates will be sent automatically.")
+        bot.sendMessage(msg['chat']['id'],"Your registered now. State updates will be sent automatically.")
     elif command == 'C':
-        if True == m_doorStateInput.getState():
-            bot.sendMessage(chatId, 'Door closing...')
-            m_doorMovementOutput.triggerDoorMovement()
-        else:
-            bot.sendMessage(chatId, 'Door is already closed.')
+        if True == myUserHandler.isUserRegistered(chatId):
+            if True == m_doorStateInput.getState():
+                bot.sendMessage(chatId, 'Door closing...')
+                m_doorMovementOutput.triggerDoorMovement()
+            else:
+                bot.sendMessage(chatId, 'Door is already closed.')
     elif command == 'O':
-        if False == m_doorStateInput.getState():
-            bot.sendMessage(chatId, 'Door opening...')
-            m_doorMovementOutput.triggerDoorMovement()
-        else:
-            bot.sendMessage(chatId, 'Door is already open.')
+        if True == isUserRegistered(chatId):
+            if False == m_doorStateInput.getState():
+                bot.sendMessage(chatId, 'Door opening...')
+                m_doorMovementOutput.triggerDoorMovement()
+            else:
+                bot.sendMessage(chatId, 'Door is already open.')
     else:
         bot.sendMessage(chatId, 'Command not supported.')
         print 'Command not supported.'
@@ -132,6 +143,14 @@ class UserHandler:
     def getUserList(self):
         return self.m_users
 
+    def isUserRegistered(self, userId):
+        isUserValid = False
+        for user in self.m_users:
+            if user == userId:
+                isUserValid = True
+        if False == isUserValid:
+            print 'You are not authorized to send this command'
+        return isUserValid
 
 # ------------------------------------------------------------------------------
 # Boolean input signal encapsulation
