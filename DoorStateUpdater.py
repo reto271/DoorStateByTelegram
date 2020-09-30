@@ -12,29 +12,18 @@ from time import sleep
 # ------------------------------------------------------------------------------
 # Print version and infos at startup
 def versionAndUsage(bot, chatId):
-    print('Door State Updater')
-    print(VersionNumber)
-    print('')
-    print('Send the following messages to the bot:')
-    print('   T: to get the current TIME.')
-    print('   R: to REGISTER yourself. You will get state updates.')
-    print('   G: GET the current door state.')
-    print('   C: CLOSE the door.')
-    print('   O: OPEN the door.')
-    print('   H: print this HELP.')
-    print('')
-    print('(c) by reto271')
-    print('')
+    helpText = str('Garage Door Controller\n\n' + VersionNumber +
+               '\n\nSend the following messages to the bot:\n' +
+               '   T: to get the current TIME.\n' +
+               '   R: to REGISTER yourself. You will get state updates.\n' +
+               '   G: GET the current door state.\n' +
+               '   C: CLOSE the door.\n' +
+               '   O: OPEN the door.\n' +
+               '   H: print this HELP.\n' +
+                   '\n(c) by reto271\n')
+    print helpText
     if '' != bot:
-        bot.sendMessage(chatId, 'Door State Updater\n\n' + VersionNumber +
-                        '\n\nSend the following messages to the bot:\n' +
-                        '   T: to get the current TIME.\n' +
-                        '   R: to REGISTER yourself. You will get state updates.\n' +
-                        '   G: GET the current door state.\n' +
-                        '   C: CLOSE the door.\n' +
-                        '   O: OPEN the door.\n' +
-                        '   H: print this HELP.\n' +
-                        '\n(c) by reto271\n')
+        bot.sendMessage(chatId, helpText)
 
 
 # ------------------------------------------------------------------------------
@@ -42,6 +31,8 @@ def versionAndUsage(bot, chatId):
 def handle(msg):
     chatId = msg['chat']['id']
     command = msg['text']
+
+    print msg
 
     #print 'Got cmd: %s' % command
     if command == 'T':
@@ -195,7 +186,7 @@ class OutputPulseHandler:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.04 B04'
+VersionNumber='V01.04 B06'
 #VersionNumber='V01.03'
 
 myTelegramId = readTelegramId()
