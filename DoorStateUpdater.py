@@ -8,85 +8,94 @@ from gpiozero import Button
 from gpiozero import LED
 from time import sleep
 
+
+# ------------------------------------------------------------------------------
 # Print version and infos at startup
 def versionAndUsage(bot, chatId):
-    print('Door State Updater')
-    print(VersionNumber)
-    print('')
-    print('Send the following messages to the bot:')
-    print('   T: to get the current TIME.')
-    print('   R: to REGISTER yourself. You will get state updates.')
-    print('   G: GET the current door state.')
-    print('   C: CLOSE the door.')
-    print('   O: OPEN the door.')
-    print('   H: print this HELP.')
-    print('')
-    print('(c) by reto271')
-    print('')
+    helpText = str('Garage Door Controller\n\n' + VersionNumber +
+               '\n\nSend the following messages to the bot:\n' +
+               '   T: to get the current TIME.\n' +
+#               '   R: to REGISTER yourself. You will get state updates.\n' +
+               '   G: GET the current door state.\n' +
+               '   C: CLOSE the door.\n' +
+               '   O: OPEN the door.\n' +
+               '   H: print this HELP.\n' +
+                   '\n(c) by reto271\n')
+    print helpText
     if '' != bot:
-        bot.sendMessage(chatId, 'Door State Updater\n\n' + VersionNumber +
-                        '\n\nSend the following messages to the bot:\n' +
-                        '   T: to get the current TIME.\n' +
-                        '   R: to REGISTER yourself. You will get state updates.\n' +
-                        '   G: GET the current door state.\n' +
-                        '   C: CLOSE the door.\n' +
-                        '   O: OPEN the door.\n' +
-                        '   H: print this HELP.\n' +
-                        '\n(c) by reto271\n')
+        bot.sendMessage(chatId, helpText)
 
 
+# ------------------------------------------------------------------------------
+# Message log
+def addMsgLogEntry(firstName, lastName, usrId, command):
+    print (str(datetime.datetime.now()) +
+           ' [' + firstName + ' ' + lastName + '] ' +
+           str(usrId) +
+           ' : ' + command)
+
+
+# ------------------------------------------------------------------------------
 # Message handler for the bot
 def handle(msg):
-    chat_id = msg['chat']['id']
+    chatId = msg['chat']['id']
     command = msg['text']
+
+    #print msg
+    addMsgLogEntry(msg['from']['first_name'], msg['from']['last_name'], chatId, command)
 
     #print 'Got cmd: %s' % command
     if command == 'T':
-        bot.sendMessage(chat_id, str(datetime.datetime.now()))
+        bot.sendMessage(chatId, str(datetime.datetime.now()))
     elif command == 'G':
-        if True == gpio2.getState():
+        if True == m_doorStateInput.getState():
             print('Door open')
-            bot.sendMessage(chat_id, 'Door state: open')
+            bot.sendMessage(chatId, 'Door state: open')
         else:
             print('Door closed')
-            bot.sendMessage(chat_id, 'Door state: closed')
+            bot.sendMessage(chatId, 'Door state: closed')
     elif command == 'H':
-        versionAndUsage(bot, chat_id)
-    elif command == 'R':
-        print('Register')
+        versionAndUsage(bot, chatId)
+    elif command == 'Reg':
         myUserHandler.addUser(msg['chat']['id'])
         myUserHandler.storeList()
-        bot.sendMessage(msg['chat']['id'],"Your ID is saved. State updates will be sent automatically.")
+        bot.sendMessage(msg['chat']['id'],"Your registered now. State updates will be sent automatically.")
     elif command == 'C':
-        if True == gpio2.getState():
-            bot.sendMessage(chat_id, 'Door closing...')
-            gpio3.sendImpulse()
-        else:
-            bot.sendMessage(chat_id, 'Door is already closed.')
+        if True == myUserHandler.isUserRegistered(chatId, bot, chatId):
+            if True == m_doorStateInput.getState():
+                bot.sendMessage(chatId, 'Door closing...')
+                m_doorMovementOutput.triggerDoorMovement()
+            else:
+                bot.sendMessage(chatId, 'Door is already closed.')
     elif command == 'O':
-        if False == gpio2.getState():
-            bot.sendMessage(chat_id, 'Door opening...')
-            gpio3.sendImpulse()
-        else:
-            bot.sendMessage(chat_id, 'Door is already open.')
+        if True == myUserHandler.isUserRegistered(chatId, bot, chatId):
+            if False == m_doorStateInput.getState():
+                bot.sendMessage(chatId, 'Door opening...')
+                m_doorMovementOutput.triggerDoorMovement()
+            else:
+                bot.sendMessage(chatId, 'Door is already open.')
+    else:
+        bot.sendMessage(chatId, 'Command not supported.')
+        print 'Command not supported.'
 
 
-
+# ------------------------------------------------------------------------------
 # Periodically polls the inputs and sends status updates
 def sendStateUpdate():
-    print 'Gpio changed to: ' + str(gpio2.getState())
+    print 'Gpio changed to: ' + str(m_doorStateInput.getState())
     if True == myUserHandler.isListEmpty():
         print 'No registered users'
     else:
         userList = myUserHandler.getUserList()
         for userId in userList:
             print 'Update user with id: ' + str(userId)
-            if True == gpio2.getState():
+            if True == m_doorStateInput.getState():
                 bot.sendMessage(userId, '-> Door state: open')
             else:
                 bot.sendMessage(userId, '-> Door state: closed')
 
 
+# ------------------------------------------------------------------------------
 # Reads the telegram Id of this bot from myId.txt
 def readTelegramId():
     try:
@@ -94,8 +103,9 @@ def readTelegramId():
             myId=idfile.read().rstrip()
     except IOError:
         myId=''
-        print 'No registered users'
+        print 'File "myId.txt" not found.'
     return myId
+
 
 # ------------------------------------------------------------------------------
 # User handler, adds users to the list and stores them persistent
@@ -116,26 +126,39 @@ class UserHandler:
 
     def storeList(self):
         with open('./registeredIds.txt', 'w') as f:
+            print '---'
             for user in self.m_users:
                 f.write(str(user) + '\n')
                 print 'Registered user: ' + str(user)
+            print '---'
 
     def loadList(self):
         try:
             with open('./registeredIds.txt', 'r') as idfile:
                 usersList = idfile.readlines()
+                print '---'
                 for user in usersList:
                     self.addUser(int(user.rstrip()))
                     print 'Registered user: ' + str(user.rstrip())
+                print '---'
         except IOError:
             print 'No registered users'
 
     def getUserList(self):
         return self.m_users
 
+    def isUserRegistered(self, userId, bot, chatId):
+        isUserValid = False
+        for user in self.m_users:
+            if user == userId:
+                isUserValid = True
+        if False == isUserValid:
+            print 'You are not authorized.'
+            bot.sendMessage(chatId, 'You are not authorized.')
+        return isUserValid
 
 # ------------------------------------------------------------------------------
-# Boolean signal encapsulation
+# Boolean input signal encapsulation
 class BooleanSignalInput:
     m_state = False
     m_lastState = False
@@ -162,8 +185,8 @@ class BooleanSignalInput:
 
 
 # ------------------------------------------------------------------------------
-# Boolean signal encapsulation
-class BooleanSignalOutput:
+# Output impulse handler
+class OutputPulseHandler:
     m_output = []
     m_requestImpulse = False
     m_sendImpulse = False
@@ -172,7 +195,7 @@ class BooleanSignalOutput:
         self.m_output = LED(gpioNumber)
         self.m_output.off()
 
-    def sendImpulse(self):
+    def triggerDoorMovement(self):
         self.m_requestImpulse = True
 
     def processOutput(self):
@@ -188,23 +211,26 @@ class BooleanSignalOutput:
             self.m_sendImpulse = True
 
 
+# ------------------------------------------------------------------------------
 # Main program
-#VersionNumber='V01.03 B03'
-VersionNumber='V01.03'
+#VersionNumber='V01.04 B07'
+VersionNumber='V01.04'
 
 myTelegramId = readTelegramId()
 
 myUserHandler = UserHandler()
 myUserHandler.loadList()
 
-gpio2 = BooleanSignalInput()
-gpio2.initialize(2)
+# Use GPIO 23
+m_doorStateInput = BooleanSignalInput()
+m_doorStateInput.initialize(23)
 
-gpio3 = BooleanSignalOutput()
-gpio3.initialize(3, False)
+# Use GPIO 24
+m_doorMovementOutput = OutputPulseHandler()
+m_doorMovementOutput.initialize(24, False)
 
 if '' == myTelegramId:
-    print 'Internal telegram id not found'
+    print 'Internal telegram id not found. Create a file "myId.txt" containing the ID of the bot.'
 else:
 
     bot = telepot.Bot(myTelegramId)
@@ -216,7 +242,7 @@ else:
 
     while 1:
         time.sleep(1)
-        gpio2.sample()
-        gpio3.processOutput()
-        if (True == gpio2.isChanged()):
+        m_doorStateInput.sample()
+        m_doorMovementOutput.processOutput()
+        if (True == m_doorStateInput.isChanged()):
             sendStateUpdate()
