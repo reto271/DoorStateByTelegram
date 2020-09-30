@@ -15,7 +15,7 @@ def versionAndUsage(bot, chatId):
     helpText = str('Garage Door Controller\n\n' + VersionNumber +
                '\n\nSend the following messages to the bot:\n' +
                '   T: to get the current TIME.\n' +
-               '   R: to REGISTER yourself. You will get state updates.\n' +
+#               '   R: to REGISTER yourself. You will get state updates.\n' +
                '   G: GET the current door state.\n' +
                '   C: CLOSE the door.\n' +
                '   O: OPEN the door.\n' +
@@ -56,19 +56,19 @@ def handle(msg):
             bot.sendMessage(chatId, 'Door state: closed')
     elif command == 'H':
         versionAndUsage(bot, chatId)
-    elif command == 'R':
+    elif command == 'Reg':
         myUserHandler.addUser(msg['chat']['id'])
         myUserHandler.storeList()
         bot.sendMessage(msg['chat']['id'],"Your registered now. State updates will be sent automatically.")
     elif command == 'C':
-        if True == myUserHandler.isUserRegistered(chatId):
+        if True == myUserHandler.isUserRegistered(chatId, bot, chatId):
             if True == m_doorStateInput.getState():
                 bot.sendMessage(chatId, 'Door closing...')
                 m_doorMovementOutput.triggerDoorMovement()
             else:
                 bot.sendMessage(chatId, 'Door is already closed.')
     elif command == 'O':
-        if True == isUserRegistered(chatId):
+        if True == myUserHandler.isUserRegistered(chatId, bot, chatId):
             if False == m_doorStateInput.getState():
                 bot.sendMessage(chatId, 'Door opening...')
                 m_doorMovementOutput.triggerDoorMovement()
@@ -126,30 +126,35 @@ class UserHandler:
 
     def storeList(self):
         with open('./registeredIds.txt', 'w') as f:
+            print '---'
             for user in self.m_users:
                 f.write(str(user) + '\n')
                 print 'Registered user: ' + str(user)
+            print '---'
 
     def loadList(self):
         try:
             with open('./registeredIds.txt', 'r') as idfile:
                 usersList = idfile.readlines()
+                print '---'
                 for user in usersList:
                     self.addUser(int(user.rstrip()))
                     print 'Registered user: ' + str(user.rstrip())
+                print '---'
         except IOError:
             print 'No registered users'
 
     def getUserList(self):
         return self.m_users
 
-    def isUserRegistered(self, userId):
+    def isUserRegistered(self, userId, bot, chatId):
         isUserValid = False
         for user in self.m_users:
             if user == userId:
                 isUserValid = True
         if False == isUserValid:
-            print 'You are not authorized to send this command'
+            print 'You are not authorized.'
+            bot.sendMessage(chatId, 'You are not authorized.')
         return isUserValid
 
 # ------------------------------------------------------------------------------
@@ -208,7 +213,7 @@ class OutputPulseHandler:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.04 B06'
+VersionNumber='V01.04 B07'
 #VersionNumber='V01.03'
 
 myTelegramId = readTelegramId()
