@@ -63,6 +63,9 @@ def handle(msg):
             m_doorMovementOutput.triggerDoorMovement()
         else:
             bot.sendMessage(chatId, 'Door is already open.')
+    else:
+        bot.sendMessage(chatId, 'Command not supported.')
+        print 'Command not supported.'
 
 
 # ------------------------------------------------------------------------------
