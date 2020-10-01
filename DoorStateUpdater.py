@@ -57,8 +57,8 @@ def handle(msg):
     elif command == 'H':
         versionAndUsage(bot, userId)
 
-    elif 'Req' == command:
-        registerUserHdl.initialize(userId)
+    elif 'Reg' == command:
+        registerUserHdl.requestPermission(msg['from']['first_name'], msg['from']['last_name'], userId)
 
     elif 'Y' == command[0]:
         registerUserHdl.ackNewUser(command[2:])
@@ -226,52 +226,70 @@ class OutputPulseHandler:
 # Register Users, the admin shall aprove new users.
 class RegisterUsersHandler:
     m_adminId = 0
-    m_bot = []
     m_pendingReqList = []
 
-    def initialize(self, bot):
-        m_bot = bot
+    def initialize(self):
         try:
             with open('./adminId.txt', 'r') as idfile:
-                self.m_adminId = int(idfile.readlines().rstrip())
+                self.m_adminId = int(idfile.read().rstrip())
                 print 'Admin Id: ' + str(self.m_adminId)
         except IOError:
             print 'Admin not yet defined.'
 
     def requestPermission(self, newUserFirstName, newUserLastName, newUserId):
         if 0 == self.m_adminId:
-            #Admin not yet defined
+            print 'admin not yet defined...'
             self.setNewAdmin(newUserId)
+            myUserHandler.addUser(newUserId)
+            myUserHandler.storeList()
         else:
-            sendRequestToAdmin(newUserFirstName, newUserLastName, newUserId)
-            addRequestToList(newUserId)
+            print 'admin already defined...'
+            self.sendRequestToAdmin(newUserFirstName, newUserLastName, newUserId)
+            self.addRequestToList(newUserId)
 
     def setNewAdmin(self, newUserId):
         with open('./adminId.txt', 'w') as f:
-            f.write(str(newUserId))
-            print 'Registered user: ' + str(newUserId)
+            f.write(str(newUserId) + '\n')
+            print 'Registered admin: ' + str(newUserId)
+            self.m_adminId = newUserId
 
     def sendRequestToAdmin(self, newUserFirstName, newUserLastName, newUserId):
-        reqText = 'User [' + newUserFirstName + ' ' + newUserLastName + '] (ID: ' + newUserId + ') requests access.'
-        self.m_bot.sendMessage(m_adminId, reqText)
+        reqText = 'User [' + newUserFirstName + ' ' + newUserLastName + '] (ID: ' + str(newUserId) + ') requests access.'
+        bot.sendMessage(self.m_adminId, reqText)
         print reqText
 
     def addRequestToList(self, newUserId):
         self.m_pendingReqList.append(newUserId)
 
     def ackNewUser(self, newUserId):
-        self.m_pendingReqList.remove(newUserId)
-        myUserHandler.addUser(newUserId)
-        myUserHandler.storeList()
-        ackText = 'Your request was approved.'
-        self.m_bot(newUserId, ackText)
-        print ackText + ' (' + newUserId + ')'
+        newUserIdInt = int(newUserId)
+        if True == self.isFeedbackCorrect(newUserIdInt):
+            self.m_pendingReqList.remove(newUserIdInt)
+            myUserHandler.addUser(newUserIdInt)
+            myUserHandler.storeList()
+            ackText = 'Your request was approved.'
+            bot.sendMessage(newUserIdInt, ackText)
+            print ackText + ' (' + newUserId + ')'
 
     def rejectNewUser(self, newUserId):
-        self.m_pendingReqList.remove(newUserId)
-        rejectText = 'Your request was rejected.'
-        self.m_bot(newUserId, rejectText)
-        print rejectText + ' (' + newUserId + ')'
+
+        newUserIdInt = int(newUserId)
+        if True == self.isFeedbackCorrect(newUserIdInt):
+            self.m_pendingReqList.remove(newUserIdInt)
+            rejectText = 'Your request was rejected.'
+            bot.sendMessage(newUserIdInt, rejectText)
+            print rejectText + ' (' + newUserId + ')'
+
+    def isFeedbackCorrect(self, newUserId):
+        requestFound = False
+        for user in self.m_pendingReqList:
+            if user == newUserId:
+                requestFound = True
+        if False == requestFound:
+            respText = 'No request pending to req: ' + str(newUserId)
+            print respText
+            bot.sendMessage(self.m_adminId, respText)
+        return requestFound
 
 # ------------------------------------------------------------------------------
 # Main program
@@ -284,6 +302,7 @@ myUserHandler = UserHandler()
 myUserHandler.loadList()
 
 registerUserHdl = RegisterUsersHandler()
+registerUserHdl.initialize()
 
 # Use GPIO 23
 m_doorStateInput = BooleanSignalInput()
@@ -296,9 +315,7 @@ m_doorMovementOutput.initialize(24, False)
 if '' == myTelegramId:
     print 'Internal telegram id not found. Create a file "myId.txt" containing the ID of the bot.'
 else:
-
     bot = telepot.Bot(myTelegramId)
-    registerUserHdl.initialize(bot)
     bot.message_loop(handle)
 
     userList = myUserHandler.getUserList()
