@@ -213,7 +213,7 @@ class OutputPulseHandler:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.05 B01'
+VersionNumber='V01.05 B02'
 #VersionNumber='V01.04'
 
 myTelegramId = readTelegramId()
