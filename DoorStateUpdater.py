@@ -212,6 +212,39 @@ class OutputPulseHandler:
 
 
 # ------------------------------------------------------------------------------
+# Register Users, the admin shall aprove new users.
+class RegisterUsersHandler:
+    m_adminId = 0
+    m_bot = []
+
+    def initialize(self, bot):
+        m_bot = bot
+        try:
+            with open('./adminId.txt', 'r') as idfile:
+                self.m_adminId = int(idfile.readlines().rstrip())
+                print 'Admin Id: ' + str(self.m_adminId)
+        except IOError:
+            print 'Admin not yet defined.'
+
+    def requestPermission(self, newUserFirstName, newUserLastName, newUserId):
+        if 0 == self.m_adminId:
+            #Admin not yet defined
+            self.setNewAdmin(newUserId)
+        else:
+            sendRequestToAdmin(newUserFirstName, newUserLastName, newUserId)
+            addRequestToList(newUserId)
+
+    def setNewAdmin(self, newUserId):
+        with open('./adminId.txt', 'w') as f:
+            f.write(str(newUserId))
+            print 'Registered user: ' + str(newUserId)
+
+    def sendRequestToAdmin(self, newUserFirstName, newUserLastName, newUserId):
+
+    def addRequestToList(self, newUserId):
+
+
+# ------------------------------------------------------------------------------
 # Main program
 VersionNumber='V01.05 B02'
 #VersionNumber='V01.04'
@@ -220,6 +253,8 @@ myTelegramId = readTelegramId()
 
 myUserHandler = UserHandler()
 myUserHandler.loadList()
+
+registerUserHdl = RegisterUsersHandler()
 
 # Use GPIO 23
 m_doorStateInput = BooleanSignalInput()
@@ -234,6 +269,7 @@ if '' == myTelegramId:
 else:
 
     bot = telepot.Bot(myTelegramId)
+    registerUserHdl.initialize(bot)
     bot.message_loop(handle)
 
     userList = myUserHandler.getUserList()
