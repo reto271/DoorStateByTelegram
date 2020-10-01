@@ -56,10 +56,21 @@ def handle(msg):
             bot.sendMessage(userId, 'Door state: closed')
     elif command == 'H':
         versionAndUsage(bot, userId)
-    elif command == 'Reg':
-        myUserHandler.addUser(msg['chat']['id'])
-        myUserHandler.storeList()
-        bot.sendMessage(msg['chat']['id'],"Your registered now. State updates will be sent automatically.")
+
+    elif 'Req' == command:
+        registerUserHdl.initialize(userId)
+
+    elif 'Y' == command[0]:
+        registerUserHdl.ackNewUser(command[2:])
+
+    elif 'N' == command[0]:
+        registerUserHdl.rejectNewUser(command[2:])
+
+#    elif command == 'Reg':
+#        myUserHandler.addUser(msg['chat']['id'])
+#        myUserHandler.storeList()
+#        bot.sendMessage(msg['chat']['id'],"Your registered now. State updates will be sent automatically.")
+
     elif command == 'C':
         if True == myUserHandler.isUserRegistered(bot, userId):
             if True == m_doorStateInput.getState():
@@ -216,6 +227,7 @@ class OutputPulseHandler:
 class RegisterUsersHandler:
     m_adminId = 0
     m_bot = []
+    m_pendingReqList = []
 
     def initialize(self, bot):
         m_bot = bot
@@ -240,9 +252,26 @@ class RegisterUsersHandler:
             print 'Registered user: ' + str(newUserId)
 
     def sendRequestToAdmin(self, newUserFirstName, newUserLastName, newUserId):
+        reqText = 'User [' + newUserFirstName + ' ' + newUserLastName + '] (ID: ' + newUserId + ') requests access.'
+        self.m_bot.sendMessage(m_adminId, reqText)
+        print reqText
 
     def addRequestToList(self, newUserId):
+        self.m_pendingReqList.append(newUserId)
 
+    def ackNewUser(self, newUserId):
+        self.m_pendingReqList.remove(newUserId)
+        myUserHandler.addUser(newUserId)
+        myUserHandler.storeList()
+        ackText = 'Your request was approved.'
+        self.m_bot(newUserId, ackText)
+        print ackText + ' (' + newUserId + ')'
+
+    def rejectNewUser(self, newUserId):
+        self.m_pendingReqList.remove(newUserId)
+        rejectText = 'Your request was rejected.'
+        self.m_bot(newUserId, rejectText)
+        print rejectText + ' (' + newUserId + ')'
 
 # ------------------------------------------------------------------------------
 # Main program
