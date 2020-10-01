@@ -293,8 +293,8 @@ class RegisterUsersHandler:
 
 # ------------------------------------------------------------------------------
 # Main program
-#VersionNumber='V01.05 B02'
-VersionNumber='V01.05'
+VersionNumber='V01.06 B01'
+#VersionNumber='V01.05'
 
 myTelegramId = readTelegramId()
 
