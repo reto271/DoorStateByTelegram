@@ -11,7 +11,7 @@ from time import sleep
 
 # ------------------------------------------------------------------------------
 # Print version and infos at startup
-def versionAndUsage(bot, chatId):
+def versionAndUsage(bot, userId):
     helpText = str('Garage Door Controller\n\n' + VersionNumber +
                '\n\nSend the following messages to the bot:\n' +
                '   T: to get the current TIME.\n' +
@@ -23,7 +23,7 @@ def versionAndUsage(bot, chatId):
                    '\n(c) by reto271\n')
     print helpText
     if '' != bot:
-        bot.sendMessage(chatId, helpText)
+        bot.sendMessage(userId, helpText)
 
 
 # ------------------------------------------------------------------------------
@@ -38,44 +38,44 @@ def addMsgLogEntry(firstName, lastName, usrId, command):
 # ------------------------------------------------------------------------------
 # Message handler for the bot
 def handle(msg):
-    chatId = msg['chat']['id']
+    userId = msg['chat']['id']
     command = msg['text']
 
     #print msg
-    addMsgLogEntry(msg['from']['first_name'], msg['from']['last_name'], chatId, command)
+    addMsgLogEntry(msg['from']['first_name'], msg['from']['last_name'], userId, command)
 
     #print 'Got cmd: %s' % command
     if command == 'T':
-        bot.sendMessage(chatId, str(datetime.datetime.now()))
+        bot.sendMessage(userId, str(datetime.datetime.now()))
     elif command == 'G':
         if True == m_doorStateInput.getState():
             print('Door open')
-            bot.sendMessage(chatId, 'Door state: open')
+            bot.sendMessage(userId, 'Door state: open')
         else:
             print('Door closed')
-            bot.sendMessage(chatId, 'Door state: closed')
+            bot.sendMessage(userId, 'Door state: closed')
     elif command == 'H':
-        versionAndUsage(bot, chatId)
+        versionAndUsage(bot, userId)
     elif command == 'Reg':
         myUserHandler.addUser(msg['chat']['id'])
         myUserHandler.storeList()
         bot.sendMessage(msg['chat']['id'],"Your registered now. State updates will be sent automatically.")
     elif command == 'C':
-        if True == myUserHandler.isUserRegistered(chatId, bot, chatId):
+        if True == myUserHandler.isUserRegistered(bot, userId):
             if True == m_doorStateInput.getState():
-                bot.sendMessage(chatId, 'Door closing...')
+                bot.sendMessage(userId, 'Door closing...')
                 m_doorMovementOutput.triggerDoorMovement()
             else:
-                bot.sendMessage(chatId, 'Door is already closed.')
+                bot.sendMessage(userId, 'Door is already closed.')
     elif command == 'O':
-        if True == myUserHandler.isUserRegistered(chatId, bot, chatId):
+        if True == myUserHandler.isUserRegistered(bot, userId):
             if False == m_doorStateInput.getState():
-                bot.sendMessage(chatId, 'Door opening...')
+                bot.sendMessage(userId, 'Door opening...')
                 m_doorMovementOutput.triggerDoorMovement()
             else:
-                bot.sendMessage(chatId, 'Door is already open.')
+                bot.sendMessage(userId, 'Door is already open.')
     else:
-        bot.sendMessage(chatId, 'Command not supported.')
+        bot.sendMessage(userId, 'Command not supported.')
         print 'Command not supported.'
 
 
@@ -147,14 +147,14 @@ class UserHandler:
     def getUserList(self):
         return self.m_users
 
-    def isUserRegistered(self, userId, bot, chatId):
+    def isUserRegistered(self, bot, userId):
         isUserValid = False
         for user in self.m_users:
             if user == userId:
                 isUserValid = True
         if False == isUserValid:
             print 'You are not authorized.'
-            bot.sendMessage(chatId, 'You are not authorized.')
+            bot.sendMessage(userId, 'You are not authorized.')
         return isUserValid
 
 # ------------------------------------------------------------------------------
