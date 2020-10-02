@@ -57,10 +57,16 @@ def handle(msg):
         m_accessRequestHandler.requestPermission(firstName, lastName, userName, userId)
 
     elif 'Y' == command[0]:
-        m_accessRequestHandler.ackNewUser(command[2:])
+        if True == m_accessRequestHandler.isAdmin(userId):
+            m_accessRequestHandler.ackNewUser(command[2:])
 
     elif 'N' == command[0]:
-        m_accessRequestHandler.rejectNewUser(command[2:])
+        if True == m_accessRequestHandler.isAdmin(userId):
+            m_accessRequestHandler.rejectNewUser(command[2:])
+
+    elif 'Pr' == command:
+        if True == m_accessRequestHandler.isAdmin(userId):
+            m_accessRequestHandler.showPendingRequests()
 
     elif command == 'C':
         if True == m_userListHandler.isUserRegistered(bot, userId):
@@ -109,7 +115,7 @@ def getStringKey2(testDict, keyName, keySubName, defaultString):
 def getIntKey1(testDict, keyName, defaultValue):
     intValue = defaultValue
     if keyName in testDict:
-        intValue =  int(testDict[keyName])
+        intValue =  tryInt(testDict[keyName], defaultValue)
     m_debugLogger.logText('{' + keyName + '} : ' + str(intValue))
     return intValue
 
@@ -120,7 +126,7 @@ def getIntKey2(testDict, keyName, keySubName, defaultValue):
     intValue = defaultValue
     if keyName in testDict:
         if keySubName in testDict[keyName]:
-            intValue =  int(testDict[keyName][keySubName])
+            intValue =  tryInt(testDict[keyName][keySubName], defaultValue)
     m_debugLogger.logText('{' + keyName + ', ' + keySubName + '} : ' + str(intValue))
     return intValue
 
@@ -128,7 +134,6 @@ def getIntKey2(testDict, keyName, keySubName, defaultValue):
 # ------------------------------------------------------------------------------
 # Periodically polls the inputs and sends status updates
 def sendStateUpdate():
-    print 'Gpio changed to: ' + str(m_doorStateInput.getState())
     if True == m_userListHandler.isListEmpty():
         m_debugLogger.logText('No registered users')
     else:
@@ -142,14 +147,23 @@ def sendStateUpdate():
 
 
 # ------------------------------------------------------------------------------
-# Reads the telegram Id of this bot from myId.txt
+# Try if it is an int and return a default value
+def tryInt(s, val=-1):
+  try:
+    return int(s)
+  except ValueError:
+    return val
+
+
+# ------------------------------------------------------------------------------
+# Reads the telegram Id of this bot from botId.txt
 def readTelegramId():
     try:
-        with open('./myId.txt', 'r') as idfile:
+        with open('./botId.txt', 'r') as idfile:
             myId=idfile.read().rstrip()
     except IOError:
         myId=''
-        m_debugLogger.logText('File "myId.txt" not found.')
+        m_debugLogger.logText('File "botId.txt" not found.')
     return myId
 
 
@@ -184,7 +198,7 @@ class UserListHandler:
                 usersList = idfile.readlines()
                 m_debugLogger.logText('---')
                 for user in usersList:
-                    self.addUser(int(user.rstrip()))
+                    self.addUser(tryInt(user.rstrip()))
                     m_debugLogger.logText('Registered user: ' + str(user.rstrip()))
                 m_debugLogger.logText('---')
         except IOError:
@@ -266,7 +280,7 @@ class AccesRequestHandler:
     def initialize(self):
         try:
             with open('./adminId.txt', 'r') as idfile:
-                self.m_adminId = int(idfile.read().rstrip())
+                self.m_adminId = tryInt(idfile.read().rstrip())
                 m_debugLogger.logText('Admin Id: ' + str(self.m_adminId))
         except IOError:
             m_debugLogger.logText('Admin not yet defined.')
@@ -297,7 +311,7 @@ class AccesRequestHandler:
         self.m_pendingReqList.append(newUserId)
 
     def ackNewUser(self, newUserId):
-        newUserIdInt = int(newUserId)
+        newUserIdInt = tryInt(newUserId)
         if True == self.isFeedbackCorrect(newUserIdInt):
             self.m_pendingReqList.remove(newUserIdInt)
             m_userListHandler.addUser(newUserIdInt)
@@ -307,8 +321,7 @@ class AccesRequestHandler:
             m_debugLogger.logText(ackText + ' (' + newUserId + ')')
 
     def rejectNewUser(self, newUserId):
-
-        newUserIdInt = int(newUserId)
+        newUserIdInt = tryInt(newUserId)
         if True == self.isFeedbackCorrect(newUserIdInt):
             self.m_pendingReqList.remove(newUserIdInt)
             rejectText = 'Your request was rejected.'
@@ -326,6 +339,25 @@ class AccesRequestHandler:
             bot.sendMessage(self.m_adminId, respText)
         return requestFound
 
+    def showPendingRequests(self):
+        testPendingReq = 'Pending req:\n'
+        m_debugLogger.logText('Pending Requests >>>')
+        for req in self.m_pendingReqList:
+            m_debugLogger.logText(str(req))
+            testPendingReq = testPendingReq + str(req) + '\n'
+        m_debugLogger.logText('Pending Requests <<<')
+        bot.sendMessage(self.m_adminId, testPendingReq)
+
+    def isAdmin(self, userId):
+        retValue = False
+        m_debugLogger.logText('isAdmin')
+        if userId == self.m_adminId:
+            retValue = True
+        else:
+            responseText = 'Command requires admin previdges'
+            m_debugLogger.logText(responseText)
+            bot.sendMessage(self.m_adminId, responseText)
+        return retValue
 
 # ------------------------------------------------------------------------------
 # Logger
@@ -346,8 +378,8 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-#VersionNumber='V01.06 B04'
-VersionNumber='V01.06'
+#VersionNumber='V01.07 B04'
+VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
 
@@ -368,7 +400,7 @@ m_doorMovementOutput = OutputPulseHandler()
 m_doorMovementOutput.initialize(24, False)
 
 if '' == m_telegramId:
-    m_debugLogger.logText('Internal telegram id not found. Create a file "myId.txt" containing the ID of the bot.')
+    m_debugLogger.logText('Internal telegram id not found. Create a file "botId.txt" containing the ID of the bot.')
 else:
     bot = telepot.Bot(m_telegramId)
     bot.message_loop(handle)
