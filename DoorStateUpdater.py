@@ -115,7 +115,7 @@ def getStringKey2(testDict, keyName, keySubName, defaultString):
 def getIntKey1(testDict, keyName, defaultValue):
     intValue = defaultValue
     if keyName in testDict:
-        intValue =  int(testDict[keyName])
+        intValue =  tryInt(testDict[keyName], 10, defaultValue)
     m_debugLogger.logText('{' + keyName + '} : ' + str(intValue))
     return intValue
 
@@ -126,7 +126,7 @@ def getIntKey2(testDict, keyName, keySubName, defaultValue):
     intValue = defaultValue
     if keyName in testDict:
         if keySubName in testDict[keyName]:
-            intValue =  int(testDict[keyName][keySubName])
+            intValue =  tryInt(testDict[keyName][keySubName], 10, defaultValue)
     m_debugLogger.logText('{' + keyName + ', ' + keySubName + '} : ' + str(intValue))
     return intValue
 
@@ -134,7 +134,6 @@ def getIntKey2(testDict, keyName, keySubName, defaultValue):
 # ------------------------------------------------------------------------------
 # Periodically polls the inputs and sends status updates
 def sendStateUpdate():
-    print 'Gpio changed to: ' + str(m_doorStateInput.getState())
     if True == m_userListHandler.isListEmpty():
         m_debugLogger.logText('No registered users')
     else:
@@ -199,7 +198,7 @@ class UserListHandler:
                 usersList = idfile.readlines()
                 m_debugLogger.logText('---')
                 for user in usersList:
-                    self.addUser(int(user.rstrip()))
+                    self.addUser(tryInt(user.rstrip()))
                     m_debugLogger.logText('Registered user: ' + str(user.rstrip()))
                 m_debugLogger.logText('---')
         except IOError:
@@ -281,7 +280,7 @@ class AccesRequestHandler:
     def initialize(self):
         try:
             with open('./adminId.txt', 'r') as idfile:
-                self.m_adminId = int(idfile.read().rstrip())
+                self.m_adminId = tryInt(idfile.read().rstrip())
                 m_debugLogger.logText('Admin Id: ' + str(self.m_adminId))
         except IOError:
             m_debugLogger.logText('Admin not yet defined.')
