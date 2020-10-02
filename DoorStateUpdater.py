@@ -115,7 +115,7 @@ def getStringKey2(testDict, keyName, keySubName, defaultString):
 def getIntKey1(testDict, keyName, defaultValue):
     intValue = defaultValue
     if keyName in testDict:
-        intValue =  tryInt(testDict[keyName], 10, defaultValue)
+        intValue =  tryInt(testDict[keyName], defaultValue)
     m_debugLogger.logText('{' + keyName + '} : ' + str(intValue))
     return intValue
 
@@ -126,7 +126,7 @@ def getIntKey2(testDict, keyName, keySubName, defaultValue):
     intValue = defaultValue
     if keyName in testDict:
         if keySubName in testDict[keyName]:
-            intValue =  tryInt(testDict[keyName][keySubName], 10, defaultValue)
+            intValue =  tryInt(testDict[keyName][keySubName], defaultValue)
     m_debugLogger.logText('{' + keyName + ', ' + keySubName + '} : ' + str(intValue))
     return intValue
 
@@ -148,9 +148,9 @@ def sendStateUpdate():
 
 # ------------------------------------------------------------------------------
 # Try if it is an int and return a default value
-def tryInt(s, base=10, val=-1):
+def tryInt(s, val=-1):
   try:
-    return int(s, base)
+    return int(s)
   except ValueError:
     return val
 
