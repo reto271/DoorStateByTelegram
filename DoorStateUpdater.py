@@ -57,13 +57,16 @@ def handle(msg):
         m_accessRequestHandler.requestPermission(firstName, lastName, userName, userId)
 
     elif 'Y' == command[0]:
-        m_accessRequestHandler.ackNewUser(command[2:])
+        if True == m_accessRequestHandler.isAdmin(userId):
+            m_accessRequestHandler.ackNewUser(command[2:])
 
     elif 'N' == command[0]:
-        m_accessRequestHandler.rejectNewUser(command[2:])
+        if True == m_accessRequestHandler.isAdmin(userId):
+            m_accessRequestHandler.rejectNewUser(command[2:])
 
     elif 'Pr' == command:
-        m_accessRequestHandler.showPendingRequests()
+        if True == m_accessRequestHandler.isAdmin(userId):
+            m_accessRequestHandler.showPendingRequests()
 
     elif command == 'C':
         if True == m_userListHandler.isUserRegistered(bot, userId):
@@ -338,6 +341,16 @@ class AccesRequestHandler:
         m_debugLogger.logText('Pending Requests <<<')
         bot.sendMessage(self.m_adminId, testPendingReq)
 
+    def isAdmin(self, userId):
+        retValue = False
+        m_debugLogger.logText('isAdmin')
+        if userId == self.m_adminId:
+            retValue = True
+        else:
+            responseText = 'Command requires admin previdges'
+            m_debugLogger.logText(responseText)
+            bot.sendMessage(self.m_adminId, responseText)
+        return retValue
 
 # ------------------------------------------------------------------------------
 # Logger
@@ -358,7 +371,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.07 B02'
+VersionNumber='V01.07 B03'
 #VersionNumber='V01.06'
 
 m_debugLogger = DebugLogger()
