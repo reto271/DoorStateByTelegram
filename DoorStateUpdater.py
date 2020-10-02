@@ -62,6 +62,9 @@ def handle(msg):
     elif 'N' == command[0]:
         m_accessRequestHandler.rejectNewUser(command[2:])
 
+    elif 'Pr' == command:
+        m_accessRequestHandler.showPendingRequests()
+
     elif command == 'C':
         if True == m_userListHandler.isUserRegistered(bot, userId):
             if True == m_doorStateInput.getState():
@@ -326,6 +329,15 @@ class AccesRequestHandler:
             bot.sendMessage(self.m_adminId, respText)
         return requestFound
 
+    def showPendingRequests(self):
+        testPendingReq = 'Pending req:\n'
+        m_debugLogger.logText('Pending Requests >>>')
+        for req in self.m_pendingReqList:
+            m_debugLogger.logText(str(req))
+            testPendingReq = testPendingReq + str(req) + '\n'
+        m_debugLogger.logText('Pending Requests <<<')
+        bot.sendMessage(self.m_adminId, testPendingReq)
+
 
 # ------------------------------------------------------------------------------
 # Logger
@@ -346,7 +358,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.07 B01'
+VersionNumber='V01.07 B02'
 #VersionNumber='V01.06'
 
 m_debugLogger = DebugLogger()
