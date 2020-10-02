@@ -15,24 +15,15 @@ def versionAndUsage(bot, userId):
     helpText = str('Garage Door Controller\n\n' + VersionNumber +
                '\n\nSend the following messages to the bot:\n' +
                '   T: to get the current TIME.\n' +
-#               '   R: to REGISTER yourself. You will get state updates.\n' +
+#               '   Reg: to REGISTER yourself. You will get state updates.\n' +
                '   G: GET the current door state.\n' +
                '   C: CLOSE the door.\n' +
                '   O: OPEN the door.\n' +
                '   H: print this HELP.\n' +
                    '\n(c) by reto271\n')
-    print helpText
+    m_debugLogger.logMultiLineText(helpText)
     if '' != bot:
         bot.sendMessage(userId, helpText)
-
-
-# ------------------------------------------------------------------------------
-# Message log
-def addMsgLogEntry(firstName, lastName, usrId, command):
-    print (str(datetime.datetime.now()) +
-           ' [' + firstName + ' ' + lastName + '] ' +
-           str(usrId) +
-           ' : ' + command)
 
 
 # ------------------------------------------------------------------------------
@@ -41,67 +32,65 @@ def handle(msg):
     userId = msg['chat']['id']
     command = msg['text']
 
-    print '-------------------------------------------'
+    m_debugLogger.logText('-------------------------------------------')
     print msg
-    addMsgLogEntry(msg['from']['first_name'], msg['from']['last_name'], userId, command)
-    print '-------------------------------------------'
+    m_debugLogger.logText(str(msg))
+    m_debugLogger.logMessageWithUser(msg['from']['first_name'], msg['from']['last_name'], userId, command)
+    m_debugLogger.logText('-------------------------------------------')
 
-    #print 'Got cmd: %s' % command
+    #m_debugLogger.logText('Got cmd: %s' % command)
     if command == 'T':
         bot.sendMessage(userId, str(datetime.datetime.now()))
     elif command == 'G':
         if True == m_doorStateInput.getState():
-            print('Door open')
+            m_debugLogger.logText('Door open')
             bot.sendMessage(userId, 'Door state: open')
         else:
-            print('Door closed')
+            m_debugLogger.logText('Door closed')
             bot.sendMessage(userId, 'Door state: closed')
     elif command == 'H':
         versionAndUsage(bot, userId)
 
     elif 'Reg' == command:
-        registerUserHdl.requestPermission(msg['from']['first_name'], msg['from']['last_name'], userId)
+        m_accessRequestHandler.requestPermission(msg['from']['first_name'], msg['from']['last_name'], userId)
 
     elif 'Y' == command[0]:
-        registerUserHdl.ackNewUser(command[2:])
+        m_accessRequestHandler.ackNewUser(command[2:])
 
     elif 'N' == command[0]:
-        registerUserHdl.rejectNewUser(command[2:])
-
-#    elif command == 'Reg':
-#        myUserHandler.addUser(msg['chat']['id'])
-#        myUserHandler.storeList()
-#        bot.sendMessage(msg['chat']['id'],"Your registered now. State updates will be sent automatically.")
+        m_accessRequestHandler.rejectNewUser(command[2:])
 
     elif command == 'C':
-        if True == myUserHandler.isUserRegistered(bot, userId):
+        if True == m_userListHandler.isUserRegistered(bot, userId):
             if True == m_doorStateInput.getState():
                 bot.sendMessage(userId, 'Door closing...')
                 m_doorMovementOutput.triggerDoorMovement()
             else:
                 bot.sendMessage(userId, 'Door is already closed.')
+                m_debugLogger.logText('Door is already closed.')
     elif command == 'O':
-        if True == myUserHandler.isUserRegistered(bot, userId):
+        if True == m_userListHandler.isUserRegistered(bot, userId):
             if False == m_doorStateInput.getState():
                 bot.sendMessage(userId, 'Door opening...')
                 m_doorMovementOutput.triggerDoorMovement()
             else:
                 bot.sendMessage(userId, 'Door is already open.')
+                m_debugLogger.logText('Door is already open.')
     else:
         bot.sendMessage(userId, 'Command not supported.')
-        print 'Command not supported.'
+        m_debugLogger.logText('Command not supported.')
 
 
 # ------------------------------------------------------------------------------
 # Periodically polls the inputs and sends status updates
 def sendStateUpdate():
     print 'Gpio changed to: ' + str(m_doorStateInput.getState())
-    if True == myUserHandler.isListEmpty():
-        print 'No registered users'
+    if True == m_userListHandler.isListEmpty():
+        m_debugLogger.logText('No registered users')
     else:
-        userList = myUserHandler.getUserList()
+        userList = m_userListHandler.getUserList()
         for userId in userList:
-            print 'Update user with id: ' + str(userId)
+            m_debugLogger.logText('Update user with id: ' + str(userId))
             if True == m_doorStateInput.getState():
                 bot.sendMessage(userId, '-> Door state: open')
             else:
@@ -116,13 +105,13 @@ def readTelegramId():
             myId=idfile.read().rstrip()
     except IOError:
         myId=''
-        print 'File "myId.txt" not found.'
+        m_debugLogger.logText('File "myId.txt" not found.')
     return myId
 
 
 # ------------------------------------------------------------------------------
 # User handler, adds users to the list and stores them persistent
-class UserHandler:
+class UserListHandler:
     m_users = []
 
     def addUser(self, userId):
@@ -132,30 +121,30 @@ class UserHandler:
                 isAlreadyInList = 1
         if 0 == isAlreadyInList:
             self.m_users.append(userId)
-            #print 'Add user: ' + str(userId)
+            #m_debugLogger.logText('Add user: ' + str(userId))
 
     def isListEmpty(self):
         return not self.m_users
 
     def storeList(self):
         with open('./registeredIds.txt', 'w') as f:
-            print '---'
+            m_debugLogger.logText('---')
             for user in self.m_users:
                 f.write(str(user) + '\n')
-                print 'Registered user: ' + str(user)
-            print '---'
+                m_debugLogger.logText('Registered user: ' + str(user))
+            m_debugLogger.logText('---')
 
     def loadList(self):
         try:
             with open('./registeredIds.txt', 'r') as idfile:
                 usersList = idfile.readlines()
-                print '---'
+                m_debugLogger.logText('---')
                 for user in usersList:
                     self.addUser(int(user.rstrip()))
-                    print 'Registered user: ' + str(user.rstrip())
-                print '---'
+                    m_debugLogger.logText('Registered user: ' + str(user.rstrip()))
+                m_debugLogger.logText('---')
         except IOError:
-            print 'No registered users'
+            m_debugLogger.logText('No registered users')
 
     def getUserList(self):
         return self.m_users
@@ -166,9 +155,10 @@ class UserHandler:
             if user == userId:
                 isUserValid = True
         if False == isUserValid:
-            print 'You are not authorized.'
+            m_debugLogger.logText('You are not authorized. ' + str(userId))
             bot.sendMessage(userId, 'You are not authorized.')
         return isUserValid
+
 
 # ------------------------------------------------------------------------------
 # Boolean input signal encapsulation
@@ -210,15 +200,14 @@ class OutputPulseHandler:
 
     def triggerDoorMovement(self):
         self.m_requestImpulse = True
+        m_debugLogger.logText('Request door movement')
 
     def processOutput(self):
         if True == self.m_sendImpulse:
-            print 'Output off'
             self.m_output.off()
             self.m_sendImpulse = False
 
         if True == self.m_requestImpulse:
-            print 'Output on'
             self.m_output.on()
             self.m_requestImpulse = False
             self.m_sendImpulse = True
@@ -226,7 +215,7 @@ class OutputPulseHandler:
 
 # ------------------------------------------------------------------------------
 # Register Users, the admin shall aprove new users.
-class RegisterUsersHandler:
+class AccesRequestHandler:
     m_adminId = 0
     m_pendingReqList = []
 
@@ -234,31 +223,31 @@ class RegisterUsersHandler:
         try:
             with open('./adminId.txt', 'r') as idfile:
                 self.m_adminId = int(idfile.read().rstrip())
-                print 'Admin Id: ' + str(self.m_adminId)
+                m_debugLogger.logText('Admin Id: ' + str(self.m_adminId))
         except IOError:
-            print 'Admin not yet defined.'
+            m_debugLogger.logText('Admin not yet defined.')
 
     def requestPermission(self, newUserFirstName, newUserLastName, newUserId):
         if 0 == self.m_adminId:
-            print 'admin not yet defined...'
+            m_debugLogger.logText('admin not yet defined...')
             self.setNewAdmin(newUserId)
-            myUserHandler.addUser(newUserId)
-            myUserHandler.storeList()
+            m_userListHandler.addUser(newUserId)
+            m_userListHandler.storeList()
         else:
-            print 'admin already defined...'
+            m_debugLogger.logText('admin already defined...')
             self.sendRequestToAdmin(newUserFirstName, newUserLastName, newUserId)
             self.addRequestToList(newUserId)
 
     def setNewAdmin(self, newUserId):
         with open('./adminId.txt', 'w') as f:
             f.write(str(newUserId) + '\n')
-            print 'Registered admin: ' + str(newUserId)
+            m_debugLogger.logText('Registered admin: ' + str(newUserId))
             self.m_adminId = newUserId
 
     def sendRequestToAdmin(self, newUserFirstName, newUserLastName, newUserId):
         reqText = 'User [' + newUserFirstName + ' ' + newUserLastName + '] (ID: ' + str(newUserId) + ') requests access.'
         bot.sendMessage(self.m_adminId, reqText)
-        print reqText
+        m_debugLogger.logText(reqText)
 
     def addRequestToList(self, newUserId):
         self.m_pendingReqList.append(newUserId)
@@ -267,11 +256,11 @@ class RegisterUsersHandler:
         newUserIdInt = int(newUserId)
         if True == self.isFeedbackCorrect(newUserIdInt):
             self.m_pendingReqList.remove(newUserIdInt)
-            myUserHandler.addUser(newUserIdInt)
-            myUserHandler.storeList()
+            m_userListHandler.addUser(newUserIdInt)
+            m_userListHandler.storeList()
             ackText = 'Your request was approved.'
             bot.sendMessage(newUserIdInt, ackText)
-            print ackText + ' (' + newUserId + ')'
+            m_debugLogger.logText(ackText + ' (' + newUserId + ')')
 
     def rejectNewUser(self, newUserId):
 
@@ -280,7 +269,7 @@ class RegisterUsersHandler:
             self.m_pendingReqList.remove(newUserIdInt)
             rejectText = 'Your request was rejected.'
             bot.sendMessage(newUserIdInt, rejectText)
-            print rejectText + ' (' + newUserId + ')'
+            m_debugLogger.logText(rejectText + ' (' + newUserId + ')')
 
     def isFeedbackCorrect(self, newUserId):
         requestFound = False
@@ -289,22 +278,42 @@ class RegisterUsersHandler:
                 requestFound = True
         if False == requestFound:
             respText = 'No request pending to req: ' + str(newUserId)
-            print respText
+            m_debugLogger.logText(respText)
             bot.sendMessage(self.m_adminId, respText)
         return requestFound
 
+
+# ------------------------------------------------------------------------------
+# Logger
+class DebugLogger:
+    def logMessageWithUser(self, firstName, lastName, usrId, command):
+        print (str(datetime.datetime.now()) +
+               ' [' + firstName + ' ' + lastName + '] ' +
+               str(usrId) + ' : ' + command)
+
+    def logText(self, text):
+        print (str(datetime.datetime.now()) +
+               ' : ' + text)
+
+    def logMultiLineText(self, text):
+        print (str(datetime.datetime.now()) +
+               ' : >>>\n' + text + '\n<<<\n')
+
+
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.06 B01'
+VersionNumber='V01.06 B03'
 #VersionNumber='V01.05'
 
-myTelegramId = readTelegramId()
+m_debugLogger = DebugLogger()
 
-myUserHandler = UserHandler()
-myUserHandler.loadList()
+m_telegramId = readTelegramId()
 
-registerUserHdl = RegisterUsersHandler()
-registerUserHdl.initialize()
+m_userListHandler = UserListHandler()
+m_userListHandler.loadList()
+
+m_accessRequestHandler = AccesRequestHandler()
+m_accessRequestHandler.initialize()
 
 # Use GPIO 23
 m_doorStateInput = BooleanSignalInput()
@@ -314,13 +323,13 @@ m_doorStateInput.initialize(23)
 m_doorMovementOutput = OutputPulseHandler()
 m_doorMovementOutput.initialize(24, False)
 
-if '' == myTelegramId:
-    print 'Internal telegram id not found. Create a file "myId.txt" containing the ID of the bot.'
+if '' == m_telegramId:
+    m_debugLogger.logText('Internal telegram id not found. Create a file "myId.txt" containing the ID of the bot.')
 else:
-    bot = telepot.Bot(myTelegramId)
+    bot = telepot.Bot(m_telegramId)
     bot.message_loop(handle)
 
-    userList = myUserHandler.getUserList()
+    userList = m_userListHandler.getUserList()
     for userId in userList:
         versionAndUsage(bot, userId)
 
