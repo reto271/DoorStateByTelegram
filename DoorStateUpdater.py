@@ -142,14 +142,14 @@ def sendStateUpdate():
 
 
 # ------------------------------------------------------------------------------
-# Reads the telegram Id of this bot from myId.txt
+# Reads the telegram Id of this bot from botId.txt
 def readTelegramId():
     try:
-        with open('./myId.txt', 'r') as idfile:
+        with open('./botId.txt', 'r') as idfile:
             myId=idfile.read().rstrip()
     except IOError:
         myId=''
-        m_debugLogger.logText('File "myId.txt" not found.')
+        m_debugLogger.logText('File "botId.txt" not found.')
     return myId
 
 
@@ -368,7 +368,7 @@ m_doorMovementOutput = OutputPulseHandler()
 m_doorMovementOutput.initialize(24, False)
 
 if '' == m_telegramId:
-    m_debugLogger.logText('Internal telegram id not found. Create a file "myId.txt" containing the ID of the bot.')
+    m_debugLogger.logText('Internal telegram id not found. Create a file "botId.txt" containing the ID of the bot.')
 else:
     bot = telepot.Bot(m_telegramId)
     bot.message_loop(handle)
