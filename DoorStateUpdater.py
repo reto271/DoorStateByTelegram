@@ -148,6 +148,15 @@ def sendStateUpdate():
 
 
 # ------------------------------------------------------------------------------
+# Try if it is an int and return a default value
+def tryInt(s, base=10, val=-1):
+  try:
+    return int(s, base)
+  except ValueError:
+    return val
+
+
+# ------------------------------------------------------------------------------
 # Reads the telegram Id of this bot from botId.txt
 def readTelegramId():
     try:
@@ -303,7 +312,7 @@ class AccesRequestHandler:
         self.m_pendingReqList.append(newUserId)
 
     def ackNewUser(self, newUserId):
-        newUserIdInt = int(newUserId)
+        newUserIdInt = tryInt(newUserId)
         if True == self.isFeedbackCorrect(newUserIdInt):
             self.m_pendingReqList.remove(newUserIdInt)
             m_userListHandler.addUser(newUserIdInt)
@@ -313,8 +322,7 @@ class AccesRequestHandler:
             m_debugLogger.logText(ackText + ' (' + newUserId + ')')
 
     def rejectNewUser(self, newUserId):
-
-        newUserIdInt = int(newUserId)
+        newUserIdInt = tryInt(newUserId)
         if True == self.isFeedbackCorrect(newUserIdInt):
             self.m_pendingReqList.remove(newUserIdInt)
             rejectText = 'Your request was rejected.'
@@ -371,7 +379,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.07 B03'
+VersionNumber='V01.07 B04'
 #VersionNumber='V01.06'
 
 m_debugLogger = DebugLogger()
