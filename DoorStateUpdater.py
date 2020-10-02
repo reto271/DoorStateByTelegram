@@ -41,8 +41,10 @@ def handle(msg):
     userId = msg['chat']['id']
     command = msg['text']
 
-    #print msg
+    print '-------------------------------------------'
+    print msg
     addMsgLogEntry(msg['from']['first_name'], msg['from']['last_name'], userId, command)
+    print '-------------------------------------------'
 
     #print 'Got cmd: %s' % command
     if command == 'T':
