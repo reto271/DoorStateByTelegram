@@ -29,13 +29,15 @@ def versionAndUsage(bot, userId):
 # ------------------------------------------------------------------------------
 # Message handler for the bot
 def handle(msg):
-    userId = msg['chat']['id']
-    command = msg['text']
+    userId = getIntKey2(msg, 'chat', 'id', -1)
+    command = getStringKey1(msg, 'text', '-')
+    firstName = getStringKey2(msg, 'from', 'first_name', 'NoFirstName')
+    lastName = getStringKey2(msg, 'from', 'last_name', 'NoLastName')
+    userName = getStringKey2(msg, 'from', 'username', 'NoUserName')
 
     m_debugLogger.logText('-------------------------------------------')
-    print msg
-    m_debugLogger.logText(str(msg))
-    m_debugLogger.logMessageWithUser(msg['from']['first_name'], msg['from']['last_name'], userId, command)
+    #m_debugLogger.logText(str(msg))
+    m_debugLogger.logMessageWithUser(firstName, lastName, userName, userId, command)
     m_debugLogger.logText('-------------------------------------------')
 
     #m_debugLogger.logText('Got cmd: %s' % command)
@@ -52,7 +54,7 @@ def handle(msg):
         versionAndUsage(bot, userId)
 
     elif 'Reg' == command:
-        m_accessRequestHandler.requestPermission(msg['from']['first_name'], msg['from']['last_name'], userId)
+        m_accessRequestHandler.requestPermission(firstName, lastName, userName, userId)
 
     elif 'Y' == command[0]:
         m_accessRequestHandler.ackNewUser(command[2:])
@@ -79,6 +81,48 @@ def handle(msg):
     else:
         bot.sendMessage(userId, 'Command not supported.')
         m_debugLogger.logText('Command not supported.')
+
+
+# ------------------------------------------------------------------------------
+# Extract string from first level key
+def getStringKey1(testDict, keyName, defaultString):
+    strValue = defaultString
+    if keyName in testDict:
+        strValue =  testDict[keyName]
+    m_debugLogger.logText('{' + keyName + '} : ' + str(strValue))
+    return strValue
+
+
+# ------------------------------------------------------------------------------
+# Extract string from second level key
+def getStringKey2(testDict, keyName, keySubName, defaultString):
+    strValue = defaultString
+    if keyName in testDict:
+        if keySubName in testDict[keyName]:
+            strValue =  testDict[keyName][keySubName]
+    m_debugLogger.logText('{' + keyName + ', ' + keySubName + '} : ' + strValue)
+    return strValue
+
+
+# ------------------------------------------------------------------------------
+# Extract int from first level key
+def getIntKey1(testDict, keyName, defaultValue):
+    intValue = defaultValue
+    if keyName in testDict:
+        intValue =  int(testDict[keyName])
+    m_debugLogger.logText('{' + keyName + '} : ' + str(intValue))
+    return intValue
+
+
+# ------------------------------------------------------------------------------
+# Extract int from second level key
+def getIntKey2(testDict, keyName, keySubName, defaultValue):
+    intValue = defaultValue
+    if keyName in testDict:
+        if keySubName in testDict[keyName]:
+            intValue =  int(testDict[keyName][keySubName])
+    m_debugLogger.logText('{' + keyName + ', ' + keySubName + '} : ' + str(intValue))
+    return intValue
 
 
 # ------------------------------------------------------------------------------
@@ -227,7 +271,7 @@ class AccesRequestHandler:
         except IOError:
             m_debugLogger.logText('Admin not yet defined.')
 
-    def requestPermission(self, newUserFirstName, newUserLastName, newUserId):
+    def requestPermission(self, newUserFirstName, newUserLastName, newUserName, newUserId):
         if 0 == self.m_adminId:
             m_debugLogger.logText('admin not yet defined...')
             self.setNewAdmin(newUserId)
@@ -235,7 +279,7 @@ class AccesRequestHandler:
             m_userListHandler.storeList()
         else:
             m_debugLogger.logText('admin already defined...')
-            self.sendRequestToAdmin(newUserFirstName, newUserLastName, newUserId)
+            self.sendRequestToAdmin(newUserFirstName, newUserLastName, newUserName, newUserId)
             self.addRequestToList(newUserId)
 
     def setNewAdmin(self, newUserId):
@@ -244,8 +288,8 @@ class AccesRequestHandler:
             m_debugLogger.logText('Registered admin: ' + str(newUserId))
             self.m_adminId = newUserId
 
-    def sendRequestToAdmin(self, newUserFirstName, newUserLastName, newUserId):
-        reqText = 'User [' + newUserFirstName + ' ' + newUserLastName + '] (ID: ' + str(newUserId) + ') requests access.'
+    def sendRequestToAdmin(self, newUserFirstName, newUserLastName, newUserName, newUserId):
+        reqText = 'User [' + newUserFirstName + ' ' + newUserLastName + ' ' + newUserName + '] (ID: ' + str(newUserId) + ') requests access.'
         bot.sendMessage(self.m_adminId, reqText)
         m_debugLogger.logText(reqText)
 
@@ -286,9 +330,9 @@ class AccesRequestHandler:
 # ------------------------------------------------------------------------------
 # Logger
 class DebugLogger:
-    def logMessageWithUser(self, firstName, lastName, usrId, command):
+    def logMessageWithUser(self, firstName, lastName, userName, usrId, command):
         print (str(datetime.datetime.now()) +
-               ' [' + firstName + ' ' + lastName + '] ' +
+               ' [' + firstName + ' ' + lastName + ' ' + userName + '] ' +
                str(usrId) + ' : ' + command)
 
     def logText(self, text):
@@ -302,7 +346,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.06 B03'
+VersionNumber='V01.06 B04'
 #VersionNumber='V01.05'
 
 m_debugLogger = DebugLogger()
