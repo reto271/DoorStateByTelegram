@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # Retos extensions
-myId.txt
+botId.txt
 registeredIds.txt
 adminId.txt
+doorState.log
