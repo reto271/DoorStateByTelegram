@@ -371,7 +371,7 @@ class DebugLogger:
                str(usrId) + ' : ' + text)
 
     def logMessageWithUserId(self, usrId, text):
-        print (str(datetime.datetime.now()) +
+        print (str(datetime.datetime.now()) + " : " +
                str(usrId) + ' : ' + text)
 
     def logText(self, text):
@@ -385,7 +385,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B04'
+VersionNumber='V01.08 B05'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
