@@ -139,11 +139,14 @@ def sendStateUpdate():
     else:
         userList = m_userListHandler.getUserList()
         for userId in userList:
-            m_debugLogger.logText('Update user with id: ' + str(userId))
             if True == m_doorStateInput.getState():
-                bot.sendMessage(userId, '-> Door state: open')
+                doorOpenNotification = '-> Door state: open'
+                bot.sendMessage(userId, doorOpenNotification)
+                logMessageWithUserId(userId, doorOpenNotification)
             else:
-                bot.sendMessage(userId, '-> Door state: closed')
+                doorCloseNotification = '-> Door state: closed'
+                bot.sendMessage(userId, doorCloseNotification)
+                logMessageWithUserId(userId, doorCloseNotification)
 
 
 # ------------------------------------------------------------------------------
@@ -362,10 +365,14 @@ class AccesRequestHandler:
 # ------------------------------------------------------------------------------
 # Logger
 class DebugLogger:
-    def logMessageWithUser(self, firstName, lastName, userName, usrId, command):
+    def logMessageWithUser(self, firstName, lastName, userName, usrId, text):
         print (str(datetime.datetime.now()) +
                ' [' + firstName + ' ' + lastName + ' ' + userName + '] ' +
-               str(usrId) + ' : ' + command)
+               str(usrId) + ' : ' + text)
+
+    def logMessageWithUserId(self, usrId, text):
+        print (str(datetime.datetime.now()) +
+               str(usrId) + ' : ' + text)
 
     def logText(self, text):
         print (str(datetime.datetime.now()) +
@@ -378,7 +385,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B01'
+VersionNumber='V01.08 B02'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
