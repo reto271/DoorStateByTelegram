@@ -142,11 +142,11 @@ def sendStateUpdate():
             if True == m_doorStateInput.getState():
                 doorOpenNotification = '-> Door state: open'
                 bot.sendMessage(userId, doorOpenNotification)
-                logMessageWithUserId(userId, doorOpenNotification)
+                m_debugLogger.logMessageWithUserId(userId, doorOpenNotification)
             else:
                 doorCloseNotification = '-> Door state: closed'
                 bot.sendMessage(userId, doorCloseNotification)
-                logMessageWithUserId(userId, doorCloseNotification)
+                m_debugLogger.logMessageWithUserId(userId, doorCloseNotification)
 
 
 # ------------------------------------------------------------------------------
@@ -385,7 +385,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B02'
+VersionNumber='V01.08 B03'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
