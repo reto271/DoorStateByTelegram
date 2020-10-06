@@ -21,7 +21,7 @@ def versionAndUsage(bot, userId):
                '   O: OPEN the door.\n' +
                '   H: print this HELP.\n' +
                    '\n(c) by reto271\n')
-    m_debugLogger.logMultiLineText(helpText)
+    m_debugLogger.logMultiLineText(userId, helpText)
     if '' != bot:
         bot.sendMessage(userId, helpText)
 
@@ -380,14 +380,15 @@ class DebugLogger:
         print (str(datetime.datetime.now()) + ' : ' +
                text)
 
-    def logMultiLineText(self, text):
+    def logMultiLineText(self, userId, text):
         print (str(datetime.datetime.now()) +
-               ' : >>>\n' + text + '\n<<<\n')
+               ' : ' +str(userId) + ' >>>\n' +
+               text + '\n<<<\n')
 
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B07'
+VersionNumber='V01.08 B08'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
@@ -419,7 +420,7 @@ else:
         if 1248724343 != userId:
             versionAndUsage(bot, userId)
         else:
-            m_debugLogger.logText('Do not send startup msg!!!')
+            m_debugLogger.logMessageWithUserId(userId, 'Do not send startup msg!!!')
 
     while 1:
         time.sleep(1)
