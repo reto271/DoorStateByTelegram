@@ -19,6 +19,8 @@ def versionAndUsage(bot, userId):
                '   G: GET the current door state.\n' +
                '   C: CLOSE the door.\n' +
                '   O: OPEN the door.\n' +
+               '   E: ENABLE notifications.\n' +
+               '   D: DISABLE notifications.\n' +
                '   H: print this HELP.\n' +
                    '\n(c) by reto271\n')
     m_debugLogger.logMultiLineText(userId, helpText)
@@ -82,6 +84,22 @@ def handle(msg):
             else:
                 bot.sendMessage(userId, 'Door is already open.')
                 m_debugLogger.logText('Door is already open.')
+
+    elif 'E' == command:
+        if True == m_userAccessList.isUserRegistered(bot, userId):
+            text = 'Notifications enabled'
+            m_userNotificationList.addUser(userId)
+            m_userNotificationList.storeList()
+            bot.sendMessage(userId, text)
+            m_debugLogger.logMessageWithUserId(userId, text)
+
+    elif 'D' == command:
+        if True == m_userAccessList.isUserRegistered(bot, userId):
+            text = 'Notifications disabled'
+            m_userNotificationList.removeUser(userId)
+            m_userNotificationList.storeList()
+            bot.sendMessage(userId, text)
+            m_debugLogger.logMessageWithUserId(userId, text)
 
     # -----
     # Admin commands
@@ -195,13 +213,21 @@ class UserListHandler:
         self.m_fileName = fileName
 
     def addUser(self, userId):
-        isAlreadyInList = 0
+        isAlreadyInList = False
         for user in self.m_users:
             if user == userId:
-                isAlreadyInList = 1
-        if 0 == isAlreadyInList:
+                isAlreadyInList = True
+        if False == isAlreadyInList:
             self.m_users.append(userId)
             #m_debugLogger.logText('Add user: ' + str(userId))
+
+    def removeUser(self, userId):
+        isInList = False
+        for user in self.m_users:
+            if user == userId:
+                isInList = True
+        if True == isInList:
+            self.m_users.remove(userId)
 
     def isListEmpty(self):
         return not self.m_users
@@ -423,7 +449,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B11'
+VersionNumber='V01.08 B12'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
