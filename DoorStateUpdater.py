@@ -190,6 +190,10 @@ def readTelegramId():
 # User handler, adds users to the list and stores them persistent
 class UserListHandler:
     m_users = []
+    m_fileName = []
+
+    def initialize(self, fileName):
+        self.m_fileName = fileName
 
     def addUser(self, userId):
         isAlreadyInList = 0
@@ -204,7 +208,7 @@ class UserListHandler:
         return not self.m_users
 
     def storeList(self):
-        with open('./registeredIds.txt', 'w') as f:
+        with open(self.m_fileName, 'w') as f:
             m_debugLogger.logText('---')
             for user in self.m_users:
                 f.write(str(user) + '\n')
@@ -213,7 +217,7 @@ class UserListHandler:
 
     def loadList(self):
         try:
-            with open('./registeredIds.txt', 'r') as idfile:
+            with open(self.m_fileName, 'r') as idfile:
                 usersList = idfile.readlines()
                 m_debugLogger.logText('---')
                 for user in usersList:
@@ -412,6 +416,7 @@ m_debugLogger = DebugLogger()
 m_telegramId = readTelegramId()
 
 m_userListHandler = UserListHandler()
+m_userListHandler.initialize('./registeredIds.txt')
 m_userListHandler.loadList()
 
 m_accessRequestHandler = AccesRequestHandler()
