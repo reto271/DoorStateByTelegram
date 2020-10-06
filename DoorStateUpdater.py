@@ -19,6 +19,8 @@ def versionAndUsage(bot, userId):
                '   G: GET the current door state.\n' +
                '   C: CLOSE the door.\n' +
                '   O: OPEN the door.\n' +
+               '   E: ENABLE notifications.\n' +
+               '   D: DISABLE notifications.\n' +
                '   H: print this HELP.\n' +
                    '\n(c) by reto271\n')
     m_debugLogger.logMultiLineText(userId, helpText)
@@ -49,11 +51,11 @@ def handle(msg):
     # -----
     # User commands
     elif command == 'T':
-        if True == m_userListHandler.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(bot, userId):
             bot.sendMessage(userId, str(datetime.datetime.now()))
 
     elif command == 'G':
-        if True == m_userListHandler.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(bot, userId):
             if True == m_doorStateInput.getState():
                 m_debugLogger.logText('Door open')
                 bot.sendMessage(userId, 'Door state: open')
@@ -62,11 +64,11 @@ def handle(msg):
                 bot.sendMessage(userId, 'Door state: closed')
 
     elif command == 'H':
-        if True == m_userListHandler.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(bot, userId):
             versionAndUsage(bot, userId)
 
     elif command == 'C':
-        if True == m_userListHandler.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(bot, userId):
             if True == m_doorStateInput.getState():
                 bot.sendMessage(userId, 'Door closing...')
                 m_doorMovementOutput.triggerDoorMovement()
@@ -75,13 +77,29 @@ def handle(msg):
                 m_debugLogger.logText('Door is already closed.')
 
     elif command == 'O':
-        if True == m_userListHandler.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(bot, userId):
             if False == m_doorStateInput.getState():
                 bot.sendMessage(userId, 'Door opening...')
                 m_doorMovementOutput.triggerDoorMovement()
             else:
                 bot.sendMessage(userId, 'Door is already open.')
                 m_debugLogger.logText('Door is already open.')
+
+    elif 'E' == command:
+        if True == m_userAccessList.isUserRegistered(bot, userId):
+            text = 'Notifications enabled'
+            m_userNotificationList.addUser(userId)
+            m_userNotificationList.storeList()
+            bot.sendMessage(userId, text)
+            m_debugLogger.logMessageWithUserId(userId, text)
+
+    elif 'D' == command:
+        if True == m_userAccessList.isUserRegistered(bot, userId):
+            text = 'Notifications disabled'
+            m_userNotificationList.removeUser(userId)
+            m_userNotificationList.storeList()
+            bot.sendMessage(userId, text)
+            m_debugLogger.logMessageWithUserId(userId, text)
 
     # -----
     # Admin commands
@@ -98,7 +116,7 @@ def handle(msg):
             m_accessRequestHandler.showPendingRequests()
 
     else:
-        if True == m_userListHandler.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(bot, userId):
             bot.sendMessage(userId, 'Command not supported.')
             m_debugLogger.logText('Command not supported.')
 
@@ -148,22 +166,19 @@ def getIntKey2(testDict, keyName, keySubName, defaultValue):
 # ------------------------------------------------------------------------------
 # Periodically polls the inputs and sends status updates
 def sendStateUpdate():
-    if True == m_userListHandler.isListEmpty():
-        m_debugLogger.logText('No registered users')
+    if True == m_userNotificationList.isListEmpty():
+        m_debugLogger.logText('No registered users to notify')
     else:
-        userList = m_userListHandler.getUserList()
+        userList = m_userNotificationList.getUserList()
         for userId in userList:
             doorNotification = []
             if True == m_doorStateInput.getState():
                 doorNotification = '-> Door state: open'
             else:
                 doorNotification = '-> Door state: closed'
+            bot.sendMessage(userId, doorNotification)
+            m_debugLogger.logMessageWithUserId(userId, doorNotification)
 
-            if 1248724343 != userId:
-                bot.sendMessage(userId, doorNotification)
-                m_debugLogger.logMessageWithUserId(userId, doorNotification)
-            else:
-                m_debugLogger.logMessageWithUserId(userId, doorNotification + ' DO NOT SEND!!!')
 
 # ------------------------------------------------------------------------------
 # Try if it is an int and return a default value
@@ -189,39 +204,53 @@ def readTelegramId():
 # ------------------------------------------------------------------------------
 # User handler, adds users to the list and stores them persistent
 class UserListHandler:
-    m_users = []
+
+    def __init__(self):
+        self.m_users = []
+        self.m_fileName = []
+
+    def initialize(self, fileName):
+        self.m_fileName = fileName
 
     def addUser(self, userId):
-        isAlreadyInList = 0
+        isAlreadyInList = False
         for user in self.m_users:
             if user == userId:
-                isAlreadyInList = 1
-        if 0 == isAlreadyInList:
+                isAlreadyInList = True
+        if False == isAlreadyInList:
             self.m_users.append(userId)
             #m_debugLogger.logText('Add user: ' + str(userId))
+
+    def removeUser(self, userId):
+        isInList = False
+        for user in self.m_users:
+            if user == userId:
+                isInList = True
+        if True == isInList:
+            self.m_users.remove(userId)
 
     def isListEmpty(self):
         return not self.m_users
 
     def storeList(self):
-        with open('./registeredIds.txt', 'w') as f:
-            m_debugLogger.logText('---')
+        with open(self.m_fileName, 'w') as f:
+            m_debugLogger.logText('--- : ' + self.m_fileName)
             for user in self.m_users:
                 f.write(str(user) + '\n')
                 m_debugLogger.logText('Registered user: ' + str(user))
-            m_debugLogger.logText('---')
+            m_debugLogger.logText('--- : ' + self.m_fileName)
 
     def loadList(self):
         try:
-            with open('./registeredIds.txt', 'r') as idfile:
+            with open(self.m_fileName, 'r') as idfile:
                 usersList = idfile.readlines()
-                m_debugLogger.logText('---')
+                m_debugLogger.logText('--- : ' + self.m_fileName)
                 for user in usersList:
                     self.addUser(tryInt(user.rstrip()))
                     m_debugLogger.logText('Registered user: ' + str(user.rstrip()))
-                m_debugLogger.logText('---')
+                m_debugLogger.logText('--- : ' + self.m_fileName)
         except IOError:
-            m_debugLogger.logText('No registered users')
+            m_debugLogger.logText('No registered users: ' + self.m_fileName)
 
     def getUserList(self):
         return self.m_users
@@ -233,17 +262,25 @@ class UserListHandler:
                 isUserValid = True
         if False == isUserValid:
             m_debugLogger.logText('You are not authorized. ' + str(userId))
-            if True == m_userListHandler.isUserRegistered(bot, userId):
-                bot.sendMessage(userId, 'You are not authorized.')
+#            if True == self.isUserRegistered(bot, userId):
+#                bot.sendMessage(userId, 'You are not authorized.')
         return isUserValid
+
+    def printList(self):
+        m_debugLogger.logText('--------------------list: ' + self.m_fileName)
+        for curUser in self.m_users:
+            m_debugLogger.logText('   ' + str(curUser))
+        m_debugLogger.logText('--------------------list: ' + self.m_fileName)
 
 
 # ------------------------------------------------------------------------------
 # Boolean input signal encapsulation
 class BooleanSignalInput:
-    m_state = False
-    m_lastState = False
-    m_botton = []
+
+    def __init__(self):
+        self.m_state = False
+        self.m_lastState = False
+        self.m_botton = []
 
     def initialize(self, gpioNumber):
         self.m_button = Button(gpioNumber)
@@ -268,9 +305,11 @@ class BooleanSignalInput:
 # ------------------------------------------------------------------------------
 # Output impulse handler
 class OutputPulseHandler:
-    m_output = []
-    m_requestImpulse = False
-    m_sendImpulse = False
+
+    def __init__(self):
+        self.m_output = []
+        self.m_requestImpulse = False
+        self.m_sendImpulse = False
 
     def initialize(self, gpioNumber, initValue):
         self.m_output = LED(gpioNumber)
@@ -294,8 +333,10 @@ class OutputPulseHandler:
 # ------------------------------------------------------------------------------
 # Register Users, the admin shall aprove new users.
 class AccesRequestHandler:
-    m_adminId = 0
-    m_pendingReqList = []
+
+    def __init__(self):
+        self.m_adminId = 0
+        self.m_pendingReqList = []
 
     def initialize(self):
         try:
@@ -309,8 +350,10 @@ class AccesRequestHandler:
         if 0 == self.m_adminId:
             m_debugLogger.logText('admin not yet defined...')
             self.setNewAdmin(newUserId)
-            m_userListHandler.addUser(newUserId)
-            m_userListHandler.storeList()
+            m_userAccessList.addUser(newUserId)
+            m_userAccessList.storeList()
+            m_userNotificationList.addUser(newUserId)
+            m_userNotificationList.storeList()
         else:
             m_debugLogger.logText('admin already defined...')
             self.sendRequestToAdmin(newUserFirstName, newUserLastName, newUserName, newUserId)
@@ -335,8 +378,10 @@ class AccesRequestHandler:
         newUserIdInt = tryInt(newUserId)
         if True == self.isFeedbackCorrect(newUserIdInt):
             self.m_pendingReqList.remove(newUserIdInt)
-            m_userListHandler.addUser(newUserIdInt)
-            m_userListHandler.storeList()
+            m_userAccessList.addUser(newUserIdInt)
+            m_userAccessList.storeList()
+            m_userNotificationList.addUser(newUserIdInt)
+            m_userNotificationList.storeList()
             ackText = 'Your request was approved.'
             bot.sendMessage(newUserIdInt, ackText)
             m_debugLogger.logText(ackText + ' (' + newUserId + ')')
@@ -404,15 +449,22 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B09'
+VersionNumber='V01.08 B12'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
 
 m_telegramId = readTelegramId()
 
-m_userListHandler = UserListHandler()
-m_userListHandler.loadList()
+m_userAccessList = UserListHandler()
+m_userAccessList.initialize('./registeredIds.txt')
+m_userAccessList.loadList()
+#m_userAccessList.printList()
+
+m_userNotificationList = UserListHandler()
+m_userNotificationList.initialize('./notificationIds.txt')
+m_userNotificationList.loadList()
+#m_userNotificationList.printList()
 
 m_accessRequestHandler = AccesRequestHandler()
 m_accessRequestHandler.initialize()
@@ -431,12 +483,9 @@ else:
     bot = telepot.Bot(m_telegramId)
     bot.message_loop(handle)
 
-    userList = m_userListHandler.getUserList()
+    userList = m_userNotificationList.getUserList()
     for userId in userList:
-        if 1248724343 != userId:
-            versionAndUsage(bot, userId)
-        else:
-            m_debugLogger.logMessageWithUserId(userId, 'Do not send startup msg!!!')
+        versionAndUsage(bot, userId)
 
     while 1:
         time.sleep(1)
