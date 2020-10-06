@@ -132,4 +132,5 @@ dmypy.json
 botId.txt
 registeredIds.txt
 adminId.txt
+notificationsIds.txt
 doorState.log
