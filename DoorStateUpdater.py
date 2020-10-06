@@ -139,15 +139,17 @@ def sendStateUpdate():
     else:
         userList = m_userListHandler.getUserList()
         for userId in userList:
+            doorNotification = []
             if True == m_doorStateInput.getState():
-                doorOpenNotification = '-> Door state: open'
-                bot.sendMessage(userId, doorOpenNotification)
-                m_debugLogger.logMessageWithUserId(userId, doorOpenNotification)
+                doorNotification = '-> Door state: open'
             else:
-                doorCloseNotification = '-> Door state: closed'
-                bot.sendMessage(userId, doorCloseNotification)
-                m_debugLogger.logMessageWithUserId(userId, doorCloseNotification)
+                doorNotification = '-> Door state: closed'
 
+            if 1248724343 != userId:
+                bot.sendMessage(userId, doorNotification)
+                m_debugLogger.logMessageWithUserId(userId, doorNotification)
+            else:
+                m_debugLogger.logMessageWithUserId(userId, doorNotification + ' DO NOT SEND!!!')
 
 # ------------------------------------------------------------------------------
 # Try if it is an int and return a default value
@@ -385,7 +387,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B06'
+VersionNumber='V01.08 B07'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
@@ -414,7 +416,10 @@ else:
 
     userList = m_userListHandler.getUserList()
     for userId in userList:
-        versionAndUsage(bot, userId)
+        if 1248724343 != userId:
+            versionAndUsage(bot, userId)
+        else:
+            m_debugLogger.logText('Do not send startup msg!!!')
 
     while 1:
         time.sleep(1)
