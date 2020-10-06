@@ -366,8 +366,8 @@ class AccesRequestHandler:
 # Logger
 class DebugLogger:
     def logMessageWithUser(self, firstName, lastName, userName, usrId, text):
-        print (str(datetime.datetime.now()) +
-               ' [' + firstName + ' ' + lastName + ' ' + userName + '] ' +
+        print (str(datetime.datetime.now()) + ' : ' +
+               '[' + firstName + ' ' + lastName + ' ' + userName + '] ' +
                str(usrId) + ' : ' + text)
 
     def logMessageWithUserId(self, usrId, text):
@@ -375,8 +375,8 @@ class DebugLogger:
                str(usrId) + ' : ' + text)
 
     def logText(self, text):
-        print (str(datetime.datetime.now()) +
-               ' : ' + text)
+        print (str(datetime.datetime.now()) + ' : ' +
+               text)
 
     def logMultiLineText(self, text):
         print (str(datetime.datetime.now()) +
@@ -385,7 +385,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B05'
+VersionNumber='V01.08 B06'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
