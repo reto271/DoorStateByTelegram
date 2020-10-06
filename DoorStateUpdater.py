@@ -449,8 +449,8 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B12'
-#VersionNumber='V01.07'
+#VersionNumber='V01.08 B12'
+VersionNumber='V01.08'
 
 m_debugLogger = DebugLogger()
 
