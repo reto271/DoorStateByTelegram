@@ -40,22 +40,51 @@ def handle(msg):
     m_debugLogger.logMessageWithUser(firstName, lastName, userName, userId, command)
     m_debugLogger.logText('-------------------------------------------')
 
-    #m_debugLogger.logText('Got cmd: %s' % command)
-    if command == 'T':
-        bot.sendMessage(userId, str(datetime.datetime.now()))
-    elif command == 'G':
-        if True == m_doorStateInput.getState():
-            m_debugLogger.logText('Door open')
-            bot.sendMessage(userId, 'Door state: open')
-        else:
-            m_debugLogger.logText('Door closed')
-            bot.sendMessage(userId, 'Door state: closed')
-    elif command == 'H':
-        versionAndUsage(bot, userId)
 
-    elif 'Reg' == command:
+    # -----
+    # The only accessible command if the user is not registered
+    if 'Reg' == command:
         m_accessRequestHandler.requestPermission(firstName, lastName, userName, userId)
 
+    # -----
+    # User commands
+    elif command == 'T':
+        if True == m_userListHandler.isUserRegistered(bot, userId):
+            bot.sendMessage(userId, str(datetime.datetime.now()))
+
+    elif command == 'G':
+        if True == m_userListHandler.isUserRegistered(bot, userId):
+            if True == m_doorStateInput.getState():
+                m_debugLogger.logText('Door open')
+                bot.sendMessage(userId, 'Door state: open')
+            else:
+                m_debugLogger.logText('Door closed')
+                bot.sendMessage(userId, 'Door state: closed')
+
+    elif command == 'H':
+        if True == m_userListHandler.isUserRegistered(bot, userId):
+            versionAndUsage(bot, userId)
+
+    elif command == 'C':
+        if True == m_userListHandler.isUserRegistered(bot, userId):
+            if True == m_doorStateInput.getState():
+                bot.sendMessage(userId, 'Door closing...')
+                m_doorMovementOutput.triggerDoorMovement()
+            else:
+                bot.sendMessage(userId, 'Door is already closed.')
+                m_debugLogger.logText('Door is already closed.')
+
+    elif command == 'O':
+        if True == m_userListHandler.isUserRegistered(bot, userId):
+            if False == m_doorStateInput.getState():
+                bot.sendMessage(userId, 'Door opening...')
+                m_doorMovementOutput.triggerDoorMovement()
+            else:
+                bot.sendMessage(userId, 'Door is already open.')
+                m_debugLogger.logText('Door is already open.')
+
+    # -----
+    # Admin commands
     elif 'Y' == command[0]:
         if True == m_accessRequestHandler.isAdmin(userId):
             m_accessRequestHandler.ackNewUser(command[2:])
@@ -68,25 +97,10 @@ def handle(msg):
         if True == m_accessRequestHandler.isAdmin(userId):
             m_accessRequestHandler.showPendingRequests()
 
-    elif command == 'C':
-        if True == m_userListHandler.isUserRegistered(bot, userId):
-            if True == m_doorStateInput.getState():
-                bot.sendMessage(userId, 'Door closing...')
-                m_doorMovementOutput.triggerDoorMovement()
-            else:
-                bot.sendMessage(userId, 'Door is already closed.')
-                m_debugLogger.logText('Door is already closed.')
-    elif command == 'O':
-        if True == m_userListHandler.isUserRegistered(bot, userId):
-            if False == m_doorStateInput.getState():
-                bot.sendMessage(userId, 'Door opening...')
-                m_doorMovementOutput.triggerDoorMovement()
-            else:
-                bot.sendMessage(userId, 'Door is already open.')
-                m_debugLogger.logText('Door is already open.')
     else:
-        bot.sendMessage(userId, 'Command not supported.')
-        m_debugLogger.logText('Command not supported.')
+        if True == m_userListHandler.isUserRegistered(bot, userId):
+            bot.sendMessage(userId, 'Command not supported.')
+            m_debugLogger.logText('Command not supported.')
 
 
 # ------------------------------------------------------------------------------
@@ -219,7 +233,8 @@ class UserListHandler:
                 isUserValid = True
         if False == isUserValid:
             m_debugLogger.logText('You are not authorized. ' + str(userId))
-            bot.sendMessage(userId, 'You are not authorized.')
+            if True == m_userListHandler.isUserRegistered(bot, userId):
+                bot.sendMessage(userId, 'You are not authorized.')
         return isUserValid
 
 
@@ -304,8 +319,9 @@ class AccesRequestHandler:
     def setNewAdmin(self, newUserId):
         with open('./adminId.txt', 'w') as f:
             f.write(str(newUserId) + '\n')
-            m_debugLogger.logText('Registered admin: ' + str(newUserId))
             self.m_adminId = newUserId
+            m_debugLogger.logText('New registered admin: ' + str(newUserId))
+            bot.sendMessage(self.m_adminId, 'You are registered as admin')
 
     def sendRequestToAdmin(self, newUserFirstName, newUserLastName, newUserName, newUserId):
         reqText = 'User [' + newUserFirstName + ' ' + newUserLastName + ' ' + newUserName + '] (ID: ' + str(newUserId) + ') requests access.'
@@ -388,7 +404,7 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-VersionNumber='V01.08 B08'
+VersionNumber='V01.08 B09'
 #VersionNumber='V01.07'
 
 m_debugLogger = DebugLogger()
