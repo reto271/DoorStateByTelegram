@@ -22,6 +22,7 @@ def versionAndUsage(bot, userId):
                '   E: ENABLE notifications.\n' +
                '   D: DISABLE notifications.\n' +
                '   H: print this HELP.\n' +
+               '   Hw: print the HW version of the Raspberry Pi.\n' +
                    '\n(c) by reto271\n')
     m_debugLogger.logMultiLineText(userId, helpText)
     if '' != bot:
@@ -100,6 +101,12 @@ def handle(msg):
             m_userNotificationList.storeList()
             bot.sendMessage(userId, text)
             m_debugLogger.logMessageWithUserId(userId, text)
+
+    elif 'Hw' == command:
+        if True == m_userAccessList.isUserRegistered(bot, userId):
+            hwVersion = getRaspberryPi_HW_Version()
+            bot.sendMessage(userId, hwVersion)
+            m_debugLogger.logMessageWithUserId(userId, hwVersion)
 
     # -----
     # Admin commands
@@ -199,6 +206,22 @@ def readTelegramId():
         myId=''
         m_debugLogger.logText('File "botId.txt" not found.')
     return myId
+
+
+# ------------------------------------------------------------------------------
+# Get Raspberry Pi HW Info from the cpuinfo file
+def getRaspberryPi_HW_Version():
+    myHW_Info = "-"
+    try:
+        f = open('/proc/cpuinfo','r')
+        for line in f:
+            if line[0:5]=='Model':
+                length=len(line)
+                myHW_Info = line[9:length-1]
+        f.close()
+    except:
+        myHW_Info = "unknown"
+    return myHW_Info
 
 
 # ------------------------------------------------------------------------------
@@ -450,7 +473,7 @@ class DebugLogger:
 # ------------------------------------------------------------------------------
 # Main program
 # Format 'V01.09 B01' or 'V01.10'
-VersionNumber='V01.09'
+VersionNumber='V01.10'
 
 m_debugLogger = DebugLogger()
 
