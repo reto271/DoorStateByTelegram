@@ -11,7 +11,6 @@ LOG_FILE=./boot.log
 # Change into the project root directory
 SCRIPTDIR=$(readlink -f $(dirname "$0"))
 pushd "${SCRIPTDIR}" > /dev/null
-cd ..
 
 #./Common/scripts/showSW_Version.sh > ${LOG_FILE}
 
@@ -20,7 +19,7 @@ echo "Process working directory" >> ${LOG_FILE}
 pwd >> ${LOG_FILE}
 echo "---------------------------" >> ${LOG_FILE}
 
-echo "Run door botas user openhabian" >> ${LOG_FILE}
+echo "Run door bot as user openhabian" >> ${LOG_FILE}
 su -s /bin/bash -c '/home/openhabian/git/DoorStateByTelegram/startDoorBot_internal.sh &' openhabian
 feedback=$?
 echo "Run user cmd feedback: ${feedback}" >> ${LOG_FILE}
