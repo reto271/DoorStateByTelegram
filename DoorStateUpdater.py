@@ -22,6 +22,7 @@ def versionAndUsage(bot, userId):
                '   E: ENABLE notifications.\n' +
                '   D: DISABLE notifications.\n' +
                '   H: print this HELP.\n' +
+               '   Hw: print the HW version of the Raspberry Pi.\n' +
                    '\n(c) by reto271\n')
     m_debugLogger.logMultiLineText(userId, helpText)
     if '' != bot:
@@ -472,7 +473,7 @@ class DebugLogger:
 # ------------------------------------------------------------------------------
 # Main program
 # Format 'V01.09 B01' or 'V01.10'
-VersionNumber='V01.10 B04'
+VersionNumber='V01.10 B05'
 
 m_debugLogger = DebugLogger()
 
