@@ -10,9 +10,20 @@ from time import sleep
 
 
 # ------------------------------------------------------------------------------
-# Print version and infos at startup
-def versionAndUsage(bot, userId):
-    helpText = str('Garage Door Controller\n\n' + VersionNumber +
+# Print software infos
+def startupInformation(bot, userId):
+    helpText = str('\nReboot...\n\n' +
+                   'Garage Door Controller\n' + VersionNumber +
+                   '\n(c) by reto271\n')
+    m_debugLogger.logMultiLineText(userId, helpText)
+    if '' != bot:
+        bot.sendMessage(userId, helpText)
+
+
+# ------------------------------------------------------------------------------
+# Print software infos
+def usageInformation(bot, userId):
+    helpText = str('Garage Door Controller - ' + VersionNumber +
                '\n\nSend the following messages to the bot:\n' +
                '   T: to get the current TIME.\n' +
 #               '   Reg: to REGISTER yourself. You will get state updates.\n' +
@@ -66,7 +77,7 @@ def handle(msg):
 
     elif command == 'H':
         if True == m_userAccessList.isUserRegistered(bot, userId):
-            versionAndUsage(bot, userId)
+            usageInformation(bot, userId)
 
     elif command == 'C':
         if True == m_userAccessList.isUserRegistered(bot, userId):
@@ -473,7 +484,7 @@ class DebugLogger:
 # ------------------------------------------------------------------------------
 # Main program
 # Format 'V01.09 B01' or 'V01.10'
-VersionNumber='V01.11 B01'
+VersionNumber='V01.11 B02'
 
 m_debugLogger = DebugLogger()
 
@@ -508,7 +519,7 @@ else:
 
     userList = m_userNotificationList.getUserList()
     for userId in userList:
-        versionAndUsage(bot, userId)
+        startupInformation(bot, userId)
 
     while 1:
         time.sleep(1)
