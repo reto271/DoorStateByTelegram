@@ -66,30 +66,12 @@ def dumpRequestsOfNotRegisteredUsers(logFileName, registeredUserList):
 
 def dumpLogOfDay(logFileName, dateString):
     print('dumpLogOfDay')
-    if validateDate(dateString):
+    dateObj = ValidateDate(dateString)
+    if True == dateObj.isValid():
         print('string is valid')
     else:
         print('Date string "' + dateString + '" is not valid.')
 
-def validateDate(dateString):
-    print('validateDate')
-    yearStr = dateString[0:4]
-    monthStr = dateString[5:7]
-    dayStr = dateString[8:10]
-    firstSeparater = dateString[4:5]
-    secondSeparater = dateString[7:8]
-
-    if -1 == myUtils.tryInt(yearStr):
-        return False
-    if -1 == myUtils.tryInt(monthStr):
-        return False
-    if -1 == myUtils.tryInt(dayStr):
-        return False
-    if '-' != firstSeparater:
-        return False
-    if '-' != secondSeparater:
-        return False
-    return True
 
 def extractUserId(userInfo):
     startPos = 1 + userInfo.find(']')
@@ -247,6 +229,52 @@ def parse_options():
 #    else:
 #        os.environ['PYTHONPATH'] = ':'.join([path, instpath])
 
+#---------------------------------------------------------------------------
+class ValidateDate:
+    def __init__(self, dateString):
+        self.m_dateString = dateString
+        self.m_state = self.__validateDate()
+        if True == self.m_state:
+            self.__convertDate()
 
+    def __validateDate(self):
+        print('validateDate')
+        yearStr = self.m_dateString[0:4]
+        monthStr = self.m_dateString[5:7]
+        dayStr = self.m_dateString[8:10]
+        firstSeparater = self.m_dateString[4:5]
+        secondSeparater = self.m_dateString[7:8]
+
+        if -1 == myUtils.tryInt(yearStr):
+            return False
+        if -1 == myUtils.tryInt(monthStr):
+            return False
+        if -1 == myUtils.tryInt(dayStr):
+            return False
+        if '-' != firstSeparater:
+            return False
+        if '-' != secondSeparater:
+            return False
+        return True
+
+    def __convertDate(self):
+        self.m_year = self.m_dateString[0:4]
+        self.m_month = self.m_dateString[5:7]
+        self.m_day = self.m_dateString[8:10]
+
+    def isValid(self):
+        return self.m_state
+
+    def getDay(self):
+        return self.m_day
+
+    def getMonth(self):
+        return self.m_month
+
+    def getYear(self):
+        return self.m_year
+
+
+#---------------------------------------------------------------------------
 if __name__ == '__main__':
     exit(main())
