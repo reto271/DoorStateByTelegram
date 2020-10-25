@@ -18,10 +18,14 @@ def main():
     """
     options = parse_options()
 
+    # Load the list of the users, some options require it.
     registeredUserList = loadRegisteredUsers()
 
+    # Process the options
     if options.notRegUser is True:
         dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
+    elif options.date:
+        dumpLogOfDay(options.logFileName[0], options.date)
     else:
         print('No action specified')
 
@@ -57,6 +61,33 @@ def dumpRequestsOfNotRegisteredUsers(logFileName, registeredUserList):
     print('--- Requests of non-registered useres:')
     localError=0
     return localError
+
+def dumpLogOfDay(logFileName, dateString):
+    print('dumpLogOfDay')
+    if validateDate(dateString):
+        print('string is valid')
+    else:
+        print('Date string "' + dateString + '" is not valid.')
+
+def validateDate(dateString):
+    print('validateDate')
+    yearStr = dateString[0:4]
+    monthStr = dateString[5:7]
+    dayStr = dateString[8:10]
+    firstSeparater = dateString[4:5]
+    secondSeparater = dateString[7:8]
+
+    if -1 == myUtils.tryInt(yearStr):
+        return False
+    if -1 == myUtils.tryInt(monthStr):
+        return False
+    if -1 == myUtils.tryInt(dayStr):
+        return False
+    if '-' != firstSeparater:
+        return False
+    if '-' != secondSeparater:
+        return False
+    return True
 
 def extractUserId(userInfo):
     startPos = 1 + userInfo.find(']')
@@ -190,6 +221,7 @@ def parse_options():
     parser.add_argument('logFileName', metavar='LogFile', type=str, nargs=1,                        help='The log file to be analyzed.')
 #    parser.add_argument('-n', '--notRegUser', default=None, help='Users not registered, tried to gain access')
     parser.add_argument('-n', '--notRegUser', action='store_true', default=False, help='Users not registered, tried to gain access')
+    parser.add_argument('-d', '--date', default=None, help='Print log of the given day, format DATE yyyy-mm-dd')
 
     options = parser.parse_args()
 
