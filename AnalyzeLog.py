@@ -17,6 +17,7 @@ from UserListHandler import UserListHandler
 def main():
     """ The main entry point of the analyse log script
     """
+    feedback = -1
     options = parse_options()
 
     # Load the list of the users, some options require it.
@@ -24,15 +25,16 @@ def main():
 
     # Process the options
     if options.notRegUser is True:
-        dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
+        feedback = dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
     elif options.version is True:
         print('Script version: ' + ProjectVersion.ProjectVersionNumber)
+        feedback = 0
     elif options.date:
-        dumpLogOfDay(options.logFileName[0], options.date)
+        feedback = dumpLogOfDay(options.logFileName[0], options.date)
     else:
         print('No action specified')
 
-    return 0
+    return feedback
 
 
 def loadRegisteredUsers():
@@ -43,13 +45,12 @@ def loadRegisteredUsers():
 
 
 def dumpRequestsOfNotRegisteredUsers(logFileName, registeredUserList):
-    localError=0
     searchKey = ': Request ['
     try:
         f = open(logFileName,'r')
     except:
         print('File ' + str(logFileName) + ' not found.')
-        localError=-1
+        return -2
 
     print('--- Requests of non-registered useres:')
     for line in f:
@@ -62,17 +63,34 @@ def dumpRequestsOfNotRegisteredUsers(logFileName, registeredUserList):
                 print(foundLine)
     f.close()
     print('--- Requests of non-registered useres:')
-    localError=0
-    return localError
+    return 0
 
 def dumpLogOfDay(logFileName, dateString):
-    print('dumpLogOfDay')
     dateObj = ValidateDate(dateString)
     if True == dateObj.isValid():
-        print('string is valid')
+        try:
+            f = open(logFileName,'r')
+        except:
+            print('File ' + str(logFileName) + ' not found.')
+            return -3
+
+        inDate = False
+        for line in f:
+            dateLine = ValidateDate(line.rstrip())
+            if True == dateLine.isValid():
+                if ((dateObj.getDay() == dateLine.getDay()) and
+                    (dateObj.getMonth() == dateLine.getMonth()) and
+                    (dateObj.getYear() == dateLine.getYear())):
+                    inDate = True
+                else:
+                    inDate = False
+
+            if True == inDate:
+                print(line.rstrip())
+        return 0
     else:
         print('Date string "' + dateString + '" is not valid.')
-
+        return -4
 
 def extractUserId(userInfo):
     startPos = 1 + userInfo.find(']')
@@ -239,7 +257,6 @@ class ValidateDate:
             self.__convertDate()
 
     def __validateDate(self):
-        print('validateDate')
         yearStr = self.m_dateString[0:4]
         monthStr = self.m_dateString[5:7]
         dayStr = self.m_dateString[8:10]
