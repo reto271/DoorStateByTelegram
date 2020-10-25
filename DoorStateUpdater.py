@@ -4,15 +4,13 @@ import random
 import datetime
 import telepot
 
-
-import myUtils
-
-from UserListHandler import UserListHandler
-#from myUtils import tryInt
-
 from gpiozero import Button
 from gpiozero import LED
 from time import sleep
+
+# My modules
+import myUtils
+from UserListHandler import UserListHandler
 
 
 # ------------------------------------------------------------------------------
@@ -204,15 +202,6 @@ def sendStateUpdate():
             m_debugLogger.logMessageWithUserId(userId, doorNotification)
 
 
-#- # ------------------------------------------------------------------------------
-#- # Try if it is an int and return a default value
-#- def tryInt(s, val=-1):
-#-   try:
-#-     return int(s)
-#-   except ValueError:
-#-     return val
-
-
 # ------------------------------------------------------------------------------
 # Reads the telegram Id of this bot from botId.txt
 def readTelegramId():
@@ -239,78 +228,6 @@ def getRaspberryPi_HW_Version():
     except:
         myHW_Info = "unknown"
     return myHW_Info
-
-
-#- # ------------------------------------------------------------------------------
-#- # User handler, adds users to the list and stores them persistent
-#- class UserListHandler:
-#-
-#-     def __init__(self):
-#-         self.m_users = []
-#-         self.m_fileName = []
-#-
-#-     def initialize(self, fileName):
-#-         self.m_fileName = fileName
-#-
-#-     def addUser(self, userId):
-#-         isAlreadyInList = False
-#-         for user in self.m_users:
-#-             if user == userId:
-#-                 isAlreadyInList = True
-#-         if False == isAlreadyInList:
-#-             self.m_users.append(userId)
-#-             #m_debugLogger.logText('Add user: ' + str(userId))
-#-
-#-     def removeUser(self, userId):
-#-         isInList = False
-#-         for user in self.m_users:
-#-             if user == userId:
-#-                 isInList = True
-#-         if True == isInList:
-#-             self.m_users.remove(userId)
-#-
-#-     def isListEmpty(self):
-#-         return not self.m_users
-#-
-#-     def storeList(self):
-#-         with open(self.m_fileName, 'w') as f:
-#-             m_debugLogger.logText('--- : ' + self.m_fileName)
-#-             for user in self.m_users:
-#-                 f.write(str(user) + '\n')
-#-                 m_debugLogger.logText('Registered user: ' + str(user))
-#-             m_debugLogger.logText('--- : ' + self.m_fileName)
-#-
-#-     def loadList(self):
-#-         try:
-#-             with open(self.m_fileName, 'r') as idfile:
-#-                 usersList = idfile.readlines()
-#-                 m_debugLogger.logText('--- : ' + self.m_fileName)
-#-                 for user in usersList:
-#-                     self.addUser(myUtils.tryInt(user.rstrip()))
-#-                     m_debugLogger.logText('Registered user: ' + str(user.rstrip()))
-#-                 m_debugLogger.logText('--- : ' + self.m_fileName)
-#-         except IOError:
-#-             m_debugLogger.logText('No registered users: ' + self.m_fileName)
-#-
-#-     def getUserList(self):
-#-         return self.m_users
-#-
-#-     def isUserRegistered(self, bot, userId):
-#-         isUserValid = False
-#-         for user in self.m_users:
-#-             if user == userId:
-#-                 isUserValid = True
-#-         if False == isUserValid:
-#-             m_debugLogger.logText('You are not authorized. ' + str(userId))
-#- #            if True == self.isUserRegistered(bot, userId):
-#- #                bot.sendMessage(userId, 'You are not authorized.')
-#-         return isUserValid
-#-
-#-     def printList(self):
-#-         m_debugLogger.logText('--------------------list: ' + self.m_fileName)
-#-         for curUser in self.m_users:
-#-             m_debugLogger.logText('   ' + str(curUser))
-#-         m_debugLogger.logText('--------------------list: ' + self.m_fileName)
 
 
 # ------------------------------------------------------------------------------
@@ -490,7 +407,7 @@ class DebugLogger:
 # ------------------------------------------------------------------------------
 # Main program
 # Format 'V01.09 B01' or 'V01.10'
-VersionNumber='V01.11B03'
+VersionNumber='V01.11B04'
 
 m_debugLogger = DebugLogger()
 

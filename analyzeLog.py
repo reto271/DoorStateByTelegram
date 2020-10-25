@@ -8,6 +8,10 @@ import os
 import sys
 import subprocess
 
+# My modules
+import myUtils
+from UserListHandler import UserListHandler
+
 
 def main():
     """ The main entry point of the test runner script.
@@ -39,15 +43,22 @@ def main():
 #    return run_tests(options, config)
     return 0
 
+
+def loadRegisteredUsers():
+    #m_userAccessList = UserListHandler(True)
+    m_userAccessList = UserListHandler()
+    m_userAccessList.initialize('./registeredIds.txt')
+    m_userAccessList.loadList()
+
+
 def dumpRequestsOfNotRegisteredUsers():
     localError=0
     try:
         f = open(options.logFileName,'r')
         for line in f:
-
-#            if line[0:5]=='Reto':
-#                length=len(line)
-#                myHW_Info = line[9:length-1]
+            if line[0:5]=='Reto':
+                length=len(line)
+                myHW_Info = line[9:length-1]
         f.close()
         print('xx: ' + myHW_Info)
         localError=0
