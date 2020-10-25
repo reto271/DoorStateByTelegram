@@ -4,6 +4,12 @@ import random
 import datetime
 import telepot
 
+
+import myUtils
+
+from UserListHandler import UserListHandler
+#from myUtils import tryInt
+
 from gpiozero import Button
 from gpiozero import LED
 from time import sleep
@@ -51,7 +57,7 @@ def handle(msg):
 
     m_debugLogger.logText('-------------------------------------------')
     #m_debugLogger.logText(str(msg))
-    m_debugLogger.logMessageWithUser(firstName, lastName, userName, userId, command)
+    m_debugLogger.logMessageCommandReceived(firstName, lastName, userName, userId, command)
     m_debugLogger.logText('-------------------------------------------')
 
 
@@ -165,7 +171,7 @@ def getStringKey2(testDict, keyName, keySubName, defaultString):
 def getIntKey1(testDict, keyName, defaultValue):
     intValue = defaultValue
     if keyName in testDict:
-        intValue =  tryInt(testDict[keyName], defaultValue)
+        intValue =  myUtils.tryInt(testDict[keyName], defaultValue)
     m_debugLogger.logText('{' + keyName + '} : ' + str(intValue))
     return intValue
 
@@ -176,7 +182,7 @@ def getIntKey2(testDict, keyName, keySubName, defaultValue):
     intValue = defaultValue
     if keyName in testDict:
         if keySubName in testDict[keyName]:
-            intValue =  tryInt(testDict[keyName][keySubName], defaultValue)
+            intValue =  myUtils.tryInt(testDict[keyName][keySubName], defaultValue)
     m_debugLogger.logText('{' + keyName + ', ' + keySubName + '} : ' + str(intValue))
     return intValue
 
@@ -198,13 +204,13 @@ def sendStateUpdate():
             m_debugLogger.logMessageWithUserId(userId, doorNotification)
 
 
-# ------------------------------------------------------------------------------
-# Try if it is an int and return a default value
-def tryInt(s, val=-1):
-  try:
-    return int(s)
-  except ValueError:
-    return val
+#- # ------------------------------------------------------------------------------
+#- # Try if it is an int and return a default value
+#- def tryInt(s, val=-1):
+#-   try:
+#-     return int(s)
+#-   except ValueError:
+#-     return val
 
 
 # ------------------------------------------------------------------------------
@@ -235,76 +241,76 @@ def getRaspberryPi_HW_Version():
     return myHW_Info
 
 
-# ------------------------------------------------------------------------------
-# User handler, adds users to the list and stores them persistent
-class UserListHandler:
-
-    def __init__(self):
-        self.m_users = []
-        self.m_fileName = []
-
-    def initialize(self, fileName):
-        self.m_fileName = fileName
-
-    def addUser(self, userId):
-        isAlreadyInList = False
-        for user in self.m_users:
-            if user == userId:
-                isAlreadyInList = True
-        if False == isAlreadyInList:
-            self.m_users.append(userId)
-            #m_debugLogger.logText('Add user: ' + str(userId))
-
-    def removeUser(self, userId):
-        isInList = False
-        for user in self.m_users:
-            if user == userId:
-                isInList = True
-        if True == isInList:
-            self.m_users.remove(userId)
-
-    def isListEmpty(self):
-        return not self.m_users
-
-    def storeList(self):
-        with open(self.m_fileName, 'w') as f:
-            m_debugLogger.logText('--- : ' + self.m_fileName)
-            for user in self.m_users:
-                f.write(str(user) + '\n')
-                m_debugLogger.logText('Registered user: ' + str(user))
-            m_debugLogger.logText('--- : ' + self.m_fileName)
-
-    def loadList(self):
-        try:
-            with open(self.m_fileName, 'r') as idfile:
-                usersList = idfile.readlines()
-                m_debugLogger.logText('--- : ' + self.m_fileName)
-                for user in usersList:
-                    self.addUser(tryInt(user.rstrip()))
-                    m_debugLogger.logText('Registered user: ' + str(user.rstrip()))
-                m_debugLogger.logText('--- : ' + self.m_fileName)
-        except IOError:
-            m_debugLogger.logText('No registered users: ' + self.m_fileName)
-
-    def getUserList(self):
-        return self.m_users
-
-    def isUserRegistered(self, bot, userId):
-        isUserValid = False
-        for user in self.m_users:
-            if user == userId:
-                isUserValid = True
-        if False == isUserValid:
-            m_debugLogger.logText('You are not authorized. ' + str(userId))
-#            if True == self.isUserRegistered(bot, userId):
-#                bot.sendMessage(userId, 'You are not authorized.')
-        return isUserValid
-
-    def printList(self):
-        m_debugLogger.logText('--------------------list: ' + self.m_fileName)
-        for curUser in self.m_users:
-            m_debugLogger.logText('   ' + str(curUser))
-        m_debugLogger.logText('--------------------list: ' + self.m_fileName)
+#- # ------------------------------------------------------------------------------
+#- # User handler, adds users to the list and stores them persistent
+#- class UserListHandler:
+#-
+#-     def __init__(self):
+#-         self.m_users = []
+#-         self.m_fileName = []
+#-
+#-     def initialize(self, fileName):
+#-         self.m_fileName = fileName
+#-
+#-     def addUser(self, userId):
+#-         isAlreadyInList = False
+#-         for user in self.m_users:
+#-             if user == userId:
+#-                 isAlreadyInList = True
+#-         if False == isAlreadyInList:
+#-             self.m_users.append(userId)
+#-             #m_debugLogger.logText('Add user: ' + str(userId))
+#-
+#-     def removeUser(self, userId):
+#-         isInList = False
+#-         for user in self.m_users:
+#-             if user == userId:
+#-                 isInList = True
+#-         if True == isInList:
+#-             self.m_users.remove(userId)
+#-
+#-     def isListEmpty(self):
+#-         return not self.m_users
+#-
+#-     def storeList(self):
+#-         with open(self.m_fileName, 'w') as f:
+#-             m_debugLogger.logText('--- : ' + self.m_fileName)
+#-             for user in self.m_users:
+#-                 f.write(str(user) + '\n')
+#-                 m_debugLogger.logText('Registered user: ' + str(user))
+#-             m_debugLogger.logText('--- : ' + self.m_fileName)
+#-
+#-     def loadList(self):
+#-         try:
+#-             with open(self.m_fileName, 'r') as idfile:
+#-                 usersList = idfile.readlines()
+#-                 m_debugLogger.logText('--- : ' + self.m_fileName)
+#-                 for user in usersList:
+#-                     self.addUser(myUtils.tryInt(user.rstrip()))
+#-                     m_debugLogger.logText('Registered user: ' + str(user.rstrip()))
+#-                 m_debugLogger.logText('--- : ' + self.m_fileName)
+#-         except IOError:
+#-             m_debugLogger.logText('No registered users: ' + self.m_fileName)
+#-
+#-     def getUserList(self):
+#-         return self.m_users
+#-
+#-     def isUserRegistered(self, bot, userId):
+#-         isUserValid = False
+#-         for user in self.m_users:
+#-             if user == userId:
+#-                 isUserValid = True
+#-         if False == isUserValid:
+#-             m_debugLogger.logText('You are not authorized. ' + str(userId))
+#- #            if True == self.isUserRegistered(bot, userId):
+#- #                bot.sendMessage(userId, 'You are not authorized.')
+#-         return isUserValid
+#-
+#-     def printList(self):
+#-         m_debugLogger.logText('--------------------list: ' + self.m_fileName)
+#-         for curUser in self.m_users:
+#-             m_debugLogger.logText('   ' + str(curUser))
+#-         m_debugLogger.logText('--------------------list: ' + self.m_fileName)
 
 
 # ------------------------------------------------------------------------------
@@ -375,7 +381,7 @@ class AccesRequestHandler:
     def initialize(self):
         try:
             with open('./adminId.txt', 'r') as idfile:
-                self.m_adminId = tryInt(idfile.read().rstrip())
+                self.m_adminId = myUtils.tryInt(idfile.read().rstrip())
                 m_debugLogger.logText('Admin Id: ' + str(self.m_adminId))
         except IOError:
             m_debugLogger.logText('Admin not yet defined.')
@@ -409,7 +415,7 @@ class AccesRequestHandler:
         self.m_pendingReqList.append(newUserId)
 
     def ackNewUser(self, newUserId):
-        newUserIdInt = tryInt(newUserId)
+        newUserIdInt = myUtils.tryInt(newUserId)
         if True == self.isFeedbackCorrect(newUserIdInt):
             self.m_pendingReqList.remove(newUserIdInt)
             m_userAccessList.addUser(newUserIdInt)
@@ -421,7 +427,7 @@ class AccesRequestHandler:
             m_debugLogger.logText(ackText + ' (' + newUserId + ')')
 
     def rejectNewUser(self, newUserId):
-        newUserIdInt = tryInt(newUserId)
+        newUserIdInt = myUtils.tryInt(newUserId)
         if True == self.isFeedbackCorrect(newUserIdInt):
             self.m_pendingReqList.remove(newUserIdInt)
             rejectText = 'Your request was rejected.'
@@ -462,9 +468,9 @@ class AccesRequestHandler:
 # ------------------------------------------------------------------------------
 # Logger
 class DebugLogger:
-    def logMessageWithUser(self, firstName, lastName, userName, usrId, text):
+    def logMessageCommandReceived(self, firstName, lastName, userName, usrId, text):
         print (str(datetime.datetime.now()) + ' : ' +
-               '[' + firstName + ' ' + lastName + ' ' + userName + '] ' +
+               'Request [' + firstName + ' ' + lastName + ' ' + userName + '] ' +
                str(usrId) + ' : ' + text)
 
     def logMessageWithUserId(self, usrId, text):
@@ -484,18 +490,18 @@ class DebugLogger:
 # ------------------------------------------------------------------------------
 # Main program
 # Format 'V01.09 B01' or 'V01.10'
-VersionNumber='V01.11'
+VersionNumber='V01.11B03'
 
 m_debugLogger = DebugLogger()
 
 m_telegramId = readTelegramId()
 
-m_userAccessList = UserListHandler()
+m_userAccessList = UserListHandler(m_debugLogger)
 m_userAccessList.initialize('./registeredIds.txt')
 m_userAccessList.loadList()
 #m_userAccessList.printList()
 
-m_userNotificationList = UserListHandler()
+m_userNotificationList = UserListHandler(m_debugLogger)
 m_userNotificationList.initialize('./notificationIds.txt')
 m_userNotificationList.loadList()
 #m_userNotificationList.printList()
