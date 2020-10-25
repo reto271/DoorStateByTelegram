@@ -10,6 +10,7 @@ import subprocess
 
 # My modules
 import myUtils
+import ProjectVersion
 from UserListHandler import UserListHandler
 
 
@@ -25,7 +26,7 @@ def main():
     if options.notRegUser is True:
         dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
     elif options.version is True:
-        print('Script version: ' + myUtils.ProjectVersionNumber)
+        print('Script version: ' + ProjectVersion.ProjectVersionNumber)
     elif options.date:
         dumpLogOfDay(options.logFileName[0], options.date)
     else:
