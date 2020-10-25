@@ -67,11 +67,11 @@ def handle(msg):
     # -----
     # User commands
     elif command == 'T':
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             bot.sendMessage(userId, str(datetime.datetime.now()))
 
     elif command == 'G':
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             if True == m_doorStateInput.getState():
                 m_debugLogger.logText('Door open')
                 bot.sendMessage(userId, 'Door state: open')
@@ -80,11 +80,11 @@ def handle(msg):
                 bot.sendMessage(userId, 'Door state: closed')
 
     elif command == 'H':
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             usageInformation(bot, userId)
 
     elif command == 'C':
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             if True == m_doorStateInput.getState():
                 bot.sendMessage(userId, 'Door closing...')
                 m_doorMovementOutput.triggerDoorMovement()
@@ -93,7 +93,7 @@ def handle(msg):
                 m_debugLogger.logText('Door is already closed.')
 
     elif command == 'O':
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             if False == m_doorStateInput.getState():
                 bot.sendMessage(userId, 'Door opening...')
                 m_doorMovementOutput.triggerDoorMovement()
@@ -102,7 +102,7 @@ def handle(msg):
                 m_debugLogger.logText('Door is already open.')
 
     elif 'E' == command:
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             text = 'Notifications enabled'
             m_userNotificationList.addUser(userId)
             m_userNotificationList.storeList()
@@ -110,7 +110,7 @@ def handle(msg):
             m_debugLogger.logMessageWithUserId(userId, text)
 
     elif 'D' == command:
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             text = 'Notifications disabled'
             m_userNotificationList.removeUser(userId)
             m_userNotificationList.storeList()
@@ -118,7 +118,7 @@ def handle(msg):
             m_debugLogger.logMessageWithUserId(userId, text)
 
     elif 'Hw' == command:
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             hwVersion = getRaspberryPi_HW_Version()
             bot.sendMessage(userId, hwVersion)
             m_debugLogger.logMessageWithUserId(userId, hwVersion)
@@ -138,7 +138,7 @@ def handle(msg):
             m_accessRequestHandler.showPendingRequests()
 
     else:
-        if True == m_userAccessList.isUserRegistered(bot, userId):
+        if True == m_userAccessList.isUserRegistered(userId):
             bot.sendMessage(userId, 'Command not supported.')
             m_debugLogger.logText('Command not supported.')
 
@@ -407,7 +407,7 @@ class DebugLogger:
 # ------------------------------------------------------------------------------
 # Main program
 # Format 'V01.09 B01' or 'V01.10'
-VersionNumber='V01.11B04'
+VersionNumber='V01.11B05'
 
 m_debugLogger = DebugLogger()
 

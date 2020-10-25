@@ -14,72 +14,55 @@ from UserListHandler import UserListHandler
 
 
 def main():
-    """ The main entry point of the test runner script.
+    """ The main entry point of the analyse log script
     """
     options = parse_options()
 
-    loadRegisteredUsers()
+    registeredUserList = loadRegisteredUsers()
 
     if options.notRegUser is True:
-        dumpRequestsOfNotRegisteredUsers()
+        dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
     else:
         print('No action specified')
 
-#    add_python_path(options.installdir)
-
-#    project_config_path = os.path.join(options.projectdir, 'config',
-#                                       'test.config')
-#    if not os.path.isfile(project_config_path):
-#        print("Could not find a project config file: {}".format(
-#            project_config_path))
-#        return 1
-#    print(" ---- " + project_config_path)
-#    config = yaml.load(open(project_config_path, 'r'))
-
-#    if options.listTests:
-#        print_test_list(config)
-#        return 0
-
-#    return run_tests(options, config)
     return 0
 
 
 def loadRegisteredUsers():
-    #m_userAccessList = UserListHandler(True)
-    m_userAccessList = UserListHandler()
-    m_userAccessList.initialize('./registeredIds.txt')
-    m_userAccessList.loadList()
+    userAccessList = UserListHandler(True)
+    userAccessList.initialize('./registeredIds.txt')
+    userAccessList.loadList()
+    return userAccessList
 
 
-def dumpRequestsOfNotRegisteredUsers():
+def dumpRequestsOfNotRegisteredUsers(logFileName, registeredUserList):
     localError=0
+    searchKey = ': Request ['
     try:
-        f = open(options.logFileName,'r')
-        for line in f:
-            if line[0:5]=='Reto':
-                length=len(line)
-                myHW_Info = line[9:length-1]
-        f.close()
-        print('xx: ' + myHW_Info)
-        localError=0
+        f = open(logFileName,'r')
     except:
-#        print('File ' + options.logFileName + ' not found.')
+        print('File ' + str(logFileName) + ' not found.')
         localError=-1
+
+    print('--- Requests of non-registered useres:')
+    for line in f:
+        pos = line.find(searchKey)
+        if 0 <= pos:
+            foundLine = line.rstrip()
+            userId = extractUserId(foundLine[pos+len(searchKey):])
+            #print(foundLine + ',    UserId: "' + str(userId) + '"')
+            if False == registeredUserList.isUserRegistered(userId):
+                print(foundLine)
+    f.close()
+    print('--- Requests of non-registered useres:')
+    localError=0
     return localError
 
-
-
-#2020-10-25 10:10:31.338513 : {chat, id} : 308764185
-#2020-10-25 10:10:31.338712 : {text} : G
-#2020-10-25 10:10:31.338812 : {from, first_name} : Reto
-#2020-10-25 10:10:31.338971 : {from, last_name} : Duss
-#2020-10-25 10:10:31.339064 : {from, username} : NoUserName
-#2020-10-25 10:10:31.339139 : -------------------------------------------
-#2020-10-25 10:10:31.339217 : Request [Reto Duss NoUserName] 308764185 : G
-#2020-10-25 10:10:31.339319 : -------------------------------------------
-#2020-10-25 10:10:31.339413 : Door closed
-#
-
+def extractUserId(userInfo):
+    startPos = 1 + userInfo.find(']')
+    endPos = userInfo.find(' ', startPos + 1)
+    userId = userInfo[startPos:endPos]
+    return myUtils.tryInt(userId)
 
 #def run_tests(options, config):
 #    ''' Run the tests as specified with the command line if non specified search

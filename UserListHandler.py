@@ -61,15 +61,14 @@ class UserListHandler:
     def getUserList(self):
         return self.m_users
 
-    def isUserRegistered(self, bot, userId):
+    def isUserRegistered(self, userId):
         isUserValid = False
         for user in self.m_users:
             if user == userId:
                 isUserValid = True
         if False == isUserValid:
-            self.__printText('You are not authorized. ' + str(userId))
-#            if True == self.isUserRegistered(bot, userId):
-#                bot.sendMessage(userId, 'You are not authorized.')
+            if False == self.m_silentMode:
+                self.__printText('You are not authorized. ' + str(userId))
         return isUserValid
 
     def printList(self):
