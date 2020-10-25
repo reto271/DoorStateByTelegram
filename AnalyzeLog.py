@@ -10,22 +10,31 @@ import subprocess
 
 # My modules
 import myUtils
+import ProjectVersion
 from UserListHandler import UserListHandler
 
 
 def main():
     """ The main entry point of the analyse log script
     """
+    feedback = -1
     options = parse_options()
 
+    # Load the list of the users, some options require it.
     registeredUserList = loadRegisteredUsers()
 
+    # Process the options
     if options.notRegUser is True:
-        dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
+        feedback = dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
+    elif options.version is True:
+        print('Script version: ' + ProjectVersion.ProjectVersionNumber)
+        feedback = 0
+    elif options.date:
+        feedback = dumpLogOfDay(options.logFileName[0], options.date)
     else:
         print('No action specified')
 
-    return 0
+    return feedback
 
 
 def loadRegisteredUsers():
@@ -36,13 +45,12 @@ def loadRegisteredUsers():
 
 
 def dumpRequestsOfNotRegisteredUsers(logFileName, registeredUserList):
-    localError=0
     searchKey = ': Request ['
     try:
         f = open(logFileName,'r')
     except:
         print('File ' + str(logFileName) + ' not found.')
-        localError=-1
+        return -2
 
     print('--- Requests of non-registered useres:')
     for line in f:
@@ -55,8 +63,34 @@ def dumpRequestsOfNotRegisteredUsers(logFileName, registeredUserList):
                 print(foundLine)
     f.close()
     print('--- Requests of non-registered useres:')
-    localError=0
-    return localError
+    return 0
+
+def dumpLogOfDay(logFileName, dateString):
+    dateObj = ValidateDate(dateString)
+    if True == dateObj.isValid():
+        try:
+            f = open(logFileName,'r')
+        except:
+            print('File ' + str(logFileName) + ' not found.')
+            return -3
+
+        inDate = False
+        for line in f:
+            dateLine = ValidateDate(line.rstrip())
+            if True == dateLine.isValid():
+                if ((dateObj.getDay() == dateLine.getDay()) and
+                    (dateObj.getMonth() == dateLine.getMonth()) and
+                    (dateObj.getYear() == dateLine.getYear())):
+                    inDate = True
+                else:
+                    inDate = False
+
+            if True == inDate:
+                print(line.rstrip())
+        return 0
+    else:
+        print('Date string "' + dateString + '" is not valid.')
+        return -4
 
 def extractUserId(userInfo):
     startPos = 1 + userInfo.find(']')
@@ -190,6 +224,8 @@ def parse_options():
     parser.add_argument('logFileName', metavar='LogFile', type=str, nargs=1,                        help='The log file to be analyzed.')
 #    parser.add_argument('-n', '--notRegUser', default=None, help='Users not registered, tried to gain access')
     parser.add_argument('-n', '--notRegUser', action='store_true', default=False, help='Users not registered, tried to gain access')
+    parser.add_argument('-v', '--version', action='store_true', default=False, help='Users not registered, tried to gain access')
+    parser.add_argument('-d', '--date', default=None, help='Print log of the given day, format DATE yyyy-mm-dd')
 
     options = parser.parse_args()
 
@@ -212,6 +248,51 @@ def parse_options():
 #    else:
 #        os.environ['PYTHONPATH'] = ':'.join([path, instpath])
 
+#---------------------------------------------------------------------------
+class ValidateDate:
+    def __init__(self, dateString):
+        self.m_dateString = dateString
+        self.m_state = self.__validateDate()
+        if True == self.m_state:
+            self.__convertDate()
 
+    def __validateDate(self):
+        yearStr = self.m_dateString[0:4]
+        monthStr = self.m_dateString[5:7]
+        dayStr = self.m_dateString[8:10]
+        firstSeparater = self.m_dateString[4:5]
+        secondSeparater = self.m_dateString[7:8]
+
+        if -1 == myUtils.tryInt(yearStr):
+            return False
+        if -1 == myUtils.tryInt(monthStr):
+            return False
+        if -1 == myUtils.tryInt(dayStr):
+            return False
+        if '-' != firstSeparater:
+            return False
+        if '-' != secondSeparater:
+            return False
+        return True
+
+    def __convertDate(self):
+        self.m_year = self.m_dateString[0:4]
+        self.m_month = self.m_dateString[5:7]
+        self.m_day = self.m_dateString[8:10]
+
+    def isValid(self):
+        return self.m_state
+
+    def getDay(self):
+        return self.m_day
+
+    def getMonth(self):
+        return self.m_month
+
+    def getYear(self):
+        return self.m_year
+
+
+#---------------------------------------------------------------------------
 if __name__ == '__main__':
     exit(main())
