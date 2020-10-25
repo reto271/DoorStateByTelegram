@@ -24,6 +24,8 @@ def main():
     # Process the options
     if options.notRegUser is True:
         dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
+    elif options.version is True:
+        print('Script version: ' + myUtils.ProjectVersionNumber)
     elif options.date:
         dumpLogOfDay(options.logFileName[0], options.date)
     else:
@@ -221,6 +223,7 @@ def parse_options():
     parser.add_argument('logFileName', metavar='LogFile', type=str, nargs=1,                        help='The log file to be analyzed.')
 #    parser.add_argument('-n', '--notRegUser', default=None, help='Users not registered, tried to gain access')
     parser.add_argument('-n', '--notRegUser', action='store_true', default=False, help='Users not registered, tried to gain access')
+    parser.add_argument('-v', '--version', action='store_true', default=False, help='Users not registered, tried to gain access')
     parser.add_argument('-d', '--date', default=None, help='Print log of the given day, format DATE yyyy-mm-dd')
 
     options = parser.parse_args()

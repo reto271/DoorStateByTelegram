@@ -17,7 +17,7 @@ from UserListHandler import UserListHandler
 # Print software infos
 def startupInformation(bot, userId):
     helpText = str('\nReboot...\n\n' +
-                   'Garage Door Controller\n' + VersionNumber +
+                   'Garage Door Controller\n' + myUtils.ProjectVersionNumber +
                    '\n(c) by reto271\n')
     m_debugLogger.logMultiLineText(userId, helpText)
     if '' != bot:
@@ -27,7 +27,7 @@ def startupInformation(bot, userId):
 # ------------------------------------------------------------------------------
 # Print software infos
 def usageInformation(bot, userId):
-    helpText = str('Garage Door Controller - ' + VersionNumber +
+    helpText = str('Garage Door Controller - ' + myUtils.ProjectVersionNumber +
                '\n\nSend the following messages to the bot:\n' +
                '   T: to get the current TIME.\n' +
 #               '   Reg: to REGISTER yourself. You will get state updates.\n' +
@@ -406,8 +406,6 @@ class DebugLogger:
 
 # ------------------------------------------------------------------------------
 # Main program
-# Format 'V01.09 B01' or 'V01.10'
-VersionNumber='V01.13 B02'
 
 m_debugLogger = DebugLogger()
 
