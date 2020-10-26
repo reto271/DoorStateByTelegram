@@ -12,10 +12,34 @@ class Test_UserListHandler(unittest.TestCase):
 
     def test_isListEmpty(self):
         self.__initializeTest()
-        m_userList = UserListHandler(False)
+        m_userList = UserListHandler(True)
         m_userList.initialize('./testIds.txt')
         m_userList.loadList()
         self.assertEqual(True, m_userList.isListEmpty())
+
+    def test_addUser(self):
+        self.__initializeTest()
+        m_userList = UserListHandler(True)
+        m_userList.initialize('./testIds.txt')
+        m_userList.loadList()
+        m_userList.addUser(1234)
+        self.assertEqual(False, m_userList.isListEmpty())
+        self.assertEqual(True, m_userList.isUserRegistered(1234))
+        self.assertEqual(False, m_userList.isUserRegistered(1235))
+
+    def test_removeUser(self):
+        self.__initializeTest()
+        m_userList = UserListHandler(True)
+        m_userList.initialize('./testIds.txt')
+        m_userList.loadList()
+        m_userList.addUser(1234)
+        self.assertEqual(False, m_userList.isListEmpty())
+        self.assertEqual(True, m_userList.isUserRegistered(1234))
+        self.assertEqual(False, m_userList.isUserRegistered(1235))
+        m_userList.removeUser(1234)
+        self.assertEqual(True, m_userList.isListEmpty())
+        self.assertEqual(False, m_userList.isUserRegistered(1234))
+        self.assertEqual(False, m_userList.isUserRegistered(1235))
 
 
 if __name__ == '__main__':
