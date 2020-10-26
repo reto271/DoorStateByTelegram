@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-import yaml
 import argparse
 import os.path
 import os
