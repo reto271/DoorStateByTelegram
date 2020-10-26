@@ -15,7 +15,10 @@ class Test_UserListHandler(unittest.TestCase):
         m_userList = UserListHandler(False)
         m_userList.initialize('./testIds.txt')
         m_userList.loadList()
-        self.assertEqual(False, m_userList.isListEmpty())
+        self.assertEqual(True, m_userList.isListEmpty())
 
 
-unittest.main()  # Calling from the command line invokes all tests
+if __name__ == '__main__':
+    import xmlrunner
+    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    #unittest.main()  # Calling from the command line invokes all tests
