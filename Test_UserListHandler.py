@@ -9,6 +9,8 @@ class Test_UserListHandler(unittest.TestCase):
     def __initializeTest(self):
         if os.path.exists('./testIds.txt'):
             os.remove('./testIds.txt')
+        with open('./testIds.txt', 'w') as f:
+            f.write('')
 
     def test_isListEmpty(self):
         self.__initializeTest()
