@@ -18,4 +18,7 @@ class Test_UserListHandler(unittest.TestCase):
         self.assertEqual(False, m_userList.isListEmpty())
 
 
-unittest.main()  # Calling from the command line invokes all tests
+#unittest.main()  # Calling from the command line invokes all tests
+if __name__ == '__main__':
+    import xmlrunner
+    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
