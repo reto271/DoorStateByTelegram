@@ -8,6 +8,8 @@ import os
 import sys
 import subprocess
 
+from datetime import date
+
 # My modules
 import myUtils
 import ProjectVersion
@@ -31,6 +33,8 @@ def main():
         feedback = 0
     elif options.date:
         feedback = dumpLogOfDay(options.logFileName[0], options.date)
+    elif options.today is True:
+        feedback = dumpLogOfDay(options.logFileName[0], str(date.today()))
     else:
         print('No action specified')
 
@@ -226,6 +230,7 @@ def parse_options():
     parser.add_argument('-n', '--notRegUser', action='store_true', default=False, help='Users not registered, tried to gain access')
     parser.add_argument('-v', '--version', action='store_true', default=False, help='Users not registered, tried to gain access')
     parser.add_argument('-d', '--date', default=None, help='Print log of the given day, format DATE yyyy-mm-dd')
+    parser.add_argument('-t', '--today', action='store_true', default=False, help='Print log of today')
 
     options = parser.parse_args()
 
