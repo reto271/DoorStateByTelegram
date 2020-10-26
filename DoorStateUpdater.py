@@ -16,14 +16,13 @@ from UserListHandler import UserListHandler
 
 # ------------------------------------------------------------------------------
 # Print software infos
-def startupInformation(bot, userId):
+def startupInformation(userId, bot = []):
     helpText = str('\nReboot...\n\n' +
                    'Garage Door Controller\n' + ProjectVersion.ProjectVersionNumber +
                    '\n(c) by reto271\n')
     m_debugLogger.logMultiLineText(userId, helpText)
-    if '' != bot:
+    if bot:
         bot.sendMessage(userId, helpText)
-
 
 # ------------------------------------------------------------------------------
 # Print software infos
@@ -441,7 +440,8 @@ else:
 
     userList = m_userNotificationList.getUserList()
     for userId in userList:
-        startupInformation(bot, userId)
+        startupInformation(userId, bot)
+    startupInformation(0)               # To the log, if there is no observer.
 
     while 1:
         time.sleep(1)
