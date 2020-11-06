@@ -134,3 +134,5 @@ registeredIds.txt
 adminId.txt
 notificationIds.txt
 doorState.log
+test-reports/
+testIds.txt
