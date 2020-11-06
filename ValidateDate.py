@@ -33,12 +33,14 @@ class ValidateDate:
             return False
         if '-' != secondSeparater:
             return False
+        if 10 != len(self.m_dateString):
+            return False
         return True
 
     def __convertDate(self):
-        self.m_year = self.m_dateString[0:4]
-        self.m_month = self.m_dateString[5:7]
-        self.m_day = self.m_dateString[8:10]
+        self.m_year = myUtils.tryInt(self.m_dateString[0:4])
+        self.m_month = myUtils.tryInt(self.m_dateString[5:7])
+        self.m_day = myUtils.tryInt(self.m_dateString[8:10])
 
     def isValid(self):
         return self.m_state
