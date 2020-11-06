@@ -37,11 +37,14 @@ class UserListHandler:
 
     def storeList(self):
         with open(self.m_fileName, 'w') as f:
-            self.__printText('--- : ' + self.m_fileName)
+            if False == self.m_silentMode:
+                self.__printText('--- : ' + self.m_fileName)
             for user in self.m_users:
                 f.write(str(user) + '\n')
-                self.__printText('Registered user: ' + str(user))
-            self.__printText('--- : ' + self.m_fileName)
+                if False == self.m_silentMode:
+                    self.__printText('Registered user: ' + str(user))
+            if False == self.m_silentMode:
+                self.__printText('--- : ' + self.m_fileName)
 
     def loadList(self):
         try:

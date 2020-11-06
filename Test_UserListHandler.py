@@ -43,6 +43,34 @@ class Test_UserListHandler(unittest.TestCase):
         self.assertEqual(False, m_userList.isUserRegistered(1234))
         self.assertEqual(False, m_userList.isUserRegistered(1235))
 
+    def test_getUserList(self):
+        self.__initializeTest()
+        m_userList = UserListHandler(True)
+        m_userList.initialize('./testIds.txt')
+        m_userList.loadList()
+        m_userList.addUser(12)
+        m_userList.addUser(123)
+        m_userList.addUser(1234)
+        userList = m_userList.getUserList()
+        self.assertEqual(3, len(userList))
+        self.assertEqual([12, 123, 1234], userList)
+
+    def test_storeLoadList(self):
+        self.__initializeTest()
+        m_writeList = UserListHandler(True)
+        m_writeList.initialize('./testIds.txt')
+        m_writeList.loadList()
+        m_writeList.addUser(12)
+        m_writeList.addUser(123)
+        m_writeList.addUser(1234)
+        m_writeList.storeList()
+        # Assure the list is still correct
+        m_readList = UserListHandler(True)
+        m_readList.initialize('./testIds.txt')
+        m_readList.loadList()
+        userList = m_readList.getUserList()
+        self.assertEqual(3, len(userList))
+        self.assertEqual([12, 123, 1234], userList)
 
 if __name__ == '__main__':
     import xmlrunner
