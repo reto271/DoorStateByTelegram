@@ -13,7 +13,7 @@ from datetime import date
 import myUtils
 import ProjectVersion
 from UserListHandler import UserListHandler
-
+from ValidateDate import ValidateDate
 
 def main():
     """ The main entry point of the analyse log script
@@ -251,51 +251,6 @@ def parse_options():
 #        os.environ['PYTHONPATH'] = instpath
 #    else:
 #        os.environ['PYTHONPATH'] = ':'.join([path, instpath])
-
-#---------------------------------------------------------------------------
-class ValidateDate:
-    def __init__(self, dateString):
-        self.m_dateString = dateString
-        self.m_state = self.__validateDate()
-        if True == self.m_state:
-            self.__convertDate()
-
-    def __validateDate(self):
-        yearStr = self.m_dateString[0:4]
-        monthStr = self.m_dateString[5:7]
-        dayStr = self.m_dateString[8:10]
-        firstSeparater = self.m_dateString[4:5]
-        secondSeparater = self.m_dateString[7:8]
-
-        if -1 == myUtils.tryInt(yearStr):
-            return False
-        if -1 == myUtils.tryInt(monthStr):
-            return False
-        if -1 == myUtils.tryInt(dayStr):
-            return False
-        if '-' != firstSeparater:
-            return False
-        if '-' != secondSeparater:
-            return False
-        return True
-
-    def __convertDate(self):
-        self.m_year = self.m_dateString[0:4]
-        self.m_month = self.m_dateString[5:7]
-        self.m_day = self.m_dateString[8:10]
-
-    def isValid(self):
-        return self.m_state
-
-    def getDay(self):
-        return self.m_day
-
-    def getMonth(self):
-        return self.m_month
-
-    def getYear(self):
-        return self.m_year
-
 
 #---------------------------------------------------------------------------
 if __name__ == '__main__':
