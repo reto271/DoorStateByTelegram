@@ -33,7 +33,11 @@ class ValidateDate:
             return False
         if '-' != secondSeparater:
             return False
-        if 10 != len(self.m_dateString):
+        if 4 != len(yearStr):
+            return False
+        if 2 != len(monthStr):
+            return False
+        if 2 != len(dayStr):
             return False
         return True
 
