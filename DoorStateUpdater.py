@@ -12,7 +12,7 @@ from time import sleep
 import myUtils
 import ProjectVersion
 from UserListHandler import UserListHandler
-
+from DoorStatistics import DoorStatistics
 
 # ------------------------------------------------------------------------------
 # Print software infos
@@ -122,6 +122,10 @@ def handle(msg):
             hwVersion = getRaspberryPi_HW_Version()
             bot.sendMessage(userId, hwVersion)
             m_debugLogger.logMessageWithUserId(userId, hwVersion)
+
+    elif 'S' == command:
+        if True == m_userAccessList.isUserRegistered(userId):
+            m_doorStats.dumpState(userId)
 
     # -----
     # Admin commands
@@ -408,6 +412,7 @@ class DebugLogger:
 # Main program
 
 m_debugLogger = DebugLogger()
+m_doorStats = []
 
 m_telegramId = readTelegramId()
 
@@ -436,12 +441,15 @@ if '' == m_telegramId:
     m_debugLogger.logText('Internal telegram id not found. Create a file "botId.txt" containing the ID of the bot.')
 else:
     bot = telepot.Bot(m_telegramId)
+    m_doorStats = DoorStatistics(bot, m_debugLogger)
     bot.message_loop(handle)
 
     userList = m_userNotificationList.getUserList()
     for userId in userList:
         startupInformation(userId, bot)
+        m_doorStats.dumpState(userId)
     startupInformation(0)               # To the log, if there is no observer.
+    m_doorStats.dumpState()
 
     while 1:
         time.sleep(1)
@@ -449,3 +457,4 @@ else:
         m_doorMovementOutput.processOutput()
         if (True == m_doorStateInput.isChanged()):
             sendStateUpdate()
+            m_doorStats.addDoorMovement()
