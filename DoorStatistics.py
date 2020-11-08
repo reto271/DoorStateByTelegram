@@ -24,6 +24,7 @@ class DoorStatistics:
         self.m_logMsg = DumpToLogAndUser(bot, 0, logger)
         self.m_nrTotalDoorMovements = 0
         self.__readDoorFile()
+        self.m_dumpedAlreadyToDay = False
 
     def dumpState(self, userId = []):
         bootTime = self.m_bootTime.strftime("%d. %B %Y %H:%M:%S")
@@ -44,6 +45,15 @@ class DoorStatistics:
         self.m_nrDoorMovementsSinceReboot = self.m_nrDoorMovementsSinceReboot + 1
         self.m_nrTotalDoorMovements = self.m_nrTotalDoorMovements + 1
         self.__storeDoorFile()
+
+    def run(self):
+        now = datetime.now()
+        if ((0 == now.min) and (0 == now.hour) and (False == self.m_dumpedAlreadyToDay)):
+            self.m_logMsg.setUserId(0)
+            self.dumpState()
+            self.m_dumpedAlreadyToDay = True
+        if ((1 == now.min) and (0 == now.hour)):
+            self.m_dumpedAlreadyToDay = False
 
     def __readDoorFile(self):
         try:
