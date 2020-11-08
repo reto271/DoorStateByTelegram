@@ -449,9 +449,12 @@ else:
         startupInformation(userId, bot)
     startupInformation(0)               # To the log, if there is no observer.
 
+    m_stateLogger.dumpState()
+
     while 1:
         time.sleep(1)
         m_doorStateInput.sample()
         m_doorMovementOutput.processOutput()
         if (True == m_doorStateInput.isChanged()):
             sendStateUpdate()
+            m_stateLogger.addDoorMovement()

@@ -43,7 +43,8 @@ class DumpToLogAndUser:
             self.m_textBot = self.m_textBot + '\n' + text
 
     def dump(self):
-        self.m_bot.sendMessage(self.m_userId, self.m_textBot)
+        if 0 != self.m_userId:
+            self.m_bot.sendMessage(self.m_userId, self.m_textBot)
         for line in self.m_textLog:
             self.m_logger.logText(line)
 
@@ -53,15 +54,36 @@ class StateLogger:
         self.m_bootTime = datetime.now()
         self.m_nrDoorMovementsSinceReboot = 0
         self.m_logMsg = DumpToLogAndUser(bot, 0, logger)
+        self.m_nrTotalDoorMovements = 0
+        self.__readDoorFile()
 
-    def dumpState(self, userId):
+    def dumpState(self, userId = []):
         bootTime = self.m_bootTime.strftime("%d. %B %Y %H:%M:%S")
         runTime = datetime.now() - self.m_bootTime
         self.m_logMsg.reset()
-        self.m_logMsg.setUserId(userId)
-        self.m_logMsg.addLine('--- State Summary --------')
-        self.m_logMsg.addLine(' Boot: ' + str(bootTime))
-        self.m_logMsg.addLine(' Run Time: ' + str(runTime))
-        self.m_logMsg.addLine(' Door Move: ' + str(self.m_nrDoorMovementsSinceReboot))
-        self.m_logMsg.addLine('--- State Summary --------')
+        if userId:
+            self.m_logMsg.setUserId(userId)
+        else:
+            self.m_logMsg.setUserId(0)
+        self.m_logMsg.addLine('State Summary:')
+        self.m_logMsg.addLine('   Boot: ' + str(bootTime))
+        self.m_logMsg.addLine('   Run Time: ' + str(runTime))
+        self.m_logMsg.addLine('   Door Move: ' + str(self.m_nrDoorMovementsSinceReboot))
+        self.m_logMsg.addLine('   Total Door Move: ' + str(self.m_nrTotalDoorMovements))
         self.m_logMsg.dump()
+
+    def addDoorMovement(self):
+        self.m_nrDoorMovementsSinceReboot = self.m_nrDoorMovementsSinceReboot + 1
+        self.m_nrTotalDoorMovements = self.m_nrTotalDoorMovements + 1
+        self.__storeDoorFile()
+
+    def __readDoorFile(self):
+        try:
+            with open('./doorStats.txt', 'r') as statsFile:
+                self.m_nrTotalDoorMovements = myUtils.tryInt(statsFile.read().rstrip())
+        except IOError:
+            self.m_nrTotalDoorMovements = 0
+
+    def __storeDoorFile(self):
+        with open('./doorStats.txt', 'w') as f:
+            f.write(str(self.m_nrTotalDoorMovements) + '\n')
