@@ -123,6 +123,10 @@ def handle(msg):
             bot.sendMessage(userId, hwVersion)
             m_debugLogger.logMessageWithUserId(userId, hwVersion)
 
+    elif 'S' == command:
+        if True == m_userAccessList.isUserRegistered(userId):
+            m_stateLogger.dumpState(userId)
+
     # -----
     # Admin commands
     elif 'Y' == command[0]:
@@ -408,7 +412,7 @@ class DebugLogger:
 # Main program
 
 m_debugLogger = DebugLogger()
-m_stateLogger = StateLogger(m_debugLogger)
+m_stateLogger = []
 
 m_telegramId = readTelegramId()
 
@@ -437,6 +441,7 @@ if '' == m_telegramId:
     m_debugLogger.logText('Internal telegram id not found. Create a file "botId.txt" containing the ID of the bot.')
 else:
     bot = telepot.Bot(m_telegramId)
+    m_stateLogger = StateLogger(bot, m_debugLogger)
     bot.message_loop(handle)
 
     userList = m_userNotificationList.getUserList()
