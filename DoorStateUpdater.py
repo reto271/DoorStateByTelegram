@@ -458,3 +458,4 @@ else:
         if (True == m_doorStateInput.isChanged()):
             sendStateUpdate()
             m_doorStats.addDoorMovement()
+        m_doorStats.run()
