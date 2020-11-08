@@ -9,7 +9,10 @@ import shutil
 
 if __name__ == '__main__':
     root_dir = os.path.dirname(__file__)
-    shutil.rmtree(root_dir + '/test-reports')
+    try:
+        shutil.rmtree(root_dir + '/test-reports')
+    except:
+        pass
     test_loader = unittest.TestLoader()
     package_tests = test_loader.discover('.', pattern='Test_*.py')
 
