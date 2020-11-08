@@ -6,21 +6,26 @@ import os
 from UserListHandler import UserListHandler
 
 class Test_UserListHandler(unittest.TestCase):
-    def __initializeTest(self):
+    def __init__(self, *args, **kwargs):
+        unittest.TestCase.__init__(self, *args, **kwargs)
         if os.path.exists('./testIds.txt'):
             os.remove('./testIds.txt')
         with open('./testIds.txt', 'w') as f:
             f.write('')
 
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
     def test_isListEmpty(self):
-        self.__initializeTest()
         m_userList = UserListHandler(True)
         m_userList.initialize('./testIds.txt')
         m_userList.loadList()
         self.assertEqual(True, m_userList.isListEmpty())
 
     def test_addUser(self):
-        self.__initializeTest()
         m_userList = UserListHandler(True)
         m_userList.initialize('./testIds.txt')
         m_userList.loadList()
@@ -30,7 +35,6 @@ class Test_UserListHandler(unittest.TestCase):
         self.assertEqual(False, m_userList.isUserRegistered(1235))
 
     def test_removeUser(self):
-        self.__initializeTest()
         m_userList = UserListHandler(True)
         m_userList.initialize('./testIds.txt')
         m_userList.loadList()
@@ -44,7 +48,6 @@ class Test_UserListHandler(unittest.TestCase):
         self.assertEqual(False, m_userList.isUserRegistered(1235))
 
     def test_getUserList(self):
-        self.__initializeTest()
         m_userList = UserListHandler(True)
         m_userList.initialize('./testIds.txt')
         m_userList.loadList()
@@ -56,7 +59,6 @@ class Test_UserListHandler(unittest.TestCase):
         self.assertEqual([12, 123, 1234], userList)
 
     def test_storeLoadList(self):
-        self.__initializeTest()
         m_writeList = UserListHandler(True)
         m_writeList.initialize('./testIds.txt')
         m_writeList.loadList()
