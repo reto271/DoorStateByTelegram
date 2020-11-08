@@ -12,7 +12,7 @@ from time import sleep
 import myUtils
 import ProjectVersion
 from UserListHandler import UserListHandler
-
+from StateLogger import StateLogger
 
 # ------------------------------------------------------------------------------
 # Print software infos
@@ -408,6 +408,7 @@ class DebugLogger:
 # Main program
 
 m_debugLogger = DebugLogger()
+m_stateLogger = StateLogger(m_debugLogger)
 
 m_telegramId = readTelegramId()
 
