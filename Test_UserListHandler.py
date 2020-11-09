@@ -8,9 +8,11 @@ from UserListHandler import UserListHandler
 class Test_UserListHandler(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
-        if os.path.exists('./testIds.txt'):
-            os.remove('./testIds.txt')
-        with open('./testIds.txt', 'w') as f:
+        if not os.path.exists('./tmp'):
+            os.makedirs('./tmp')
+        if os.path.exists('./tmp/testIds.txt'):
+            os.remove('./tmp/testIds.txt')
+        with open('./tmp/testIds.txt', 'w') as f:
             f.write('')
 
     def setUp(self):
@@ -21,13 +23,13 @@ class Test_UserListHandler(unittest.TestCase):
 
     def test_isListEmpty(self):
         m_userList = UserListHandler(True)
-        m_userList.initialize('./testIds.txt')
+        m_userList.initialize('./tmp/testIds.txt')
         m_userList.loadList()
         self.assertEqual(True, m_userList.isListEmpty())
 
     def test_addUser(self):
         m_userList = UserListHandler(True)
-        m_userList.initialize('./testIds.txt')
+        m_userList.initialize('./tmp/testIds.txt')
         m_userList.loadList()
         m_userList.addUser(1234)
         self.assertEqual(False, m_userList.isListEmpty())
@@ -36,7 +38,7 @@ class Test_UserListHandler(unittest.TestCase):
 
     def test_removeUser(self):
         m_userList = UserListHandler(True)
-        m_userList.initialize('./testIds.txt')
+        m_userList.initialize('./tmp/testIds.txt')
         m_userList.loadList()
         m_userList.addUser(1234)
         self.assertEqual(False, m_userList.isListEmpty())
@@ -49,7 +51,7 @@ class Test_UserListHandler(unittest.TestCase):
 
     def test_getUserList(self):
         m_userList = UserListHandler(True)
-        m_userList.initialize('./testIds.txt')
+        m_userList.initialize('./tmp/testIds.txt')
         m_userList.loadList()
         m_userList.addUser(12)
         m_userList.addUser(123)
@@ -60,7 +62,7 @@ class Test_UserListHandler(unittest.TestCase):
 
     def test_storeLoadList(self):
         m_writeList = UserListHandler(True)
-        m_writeList.initialize('./testIds.txt')
+        m_writeList.initialize('./tmp/testIds.txt')
         m_writeList.loadList()
         m_writeList.addUser(12)
         m_writeList.addUser(123)
@@ -68,7 +70,7 @@ class Test_UserListHandler(unittest.TestCase):
         m_writeList.storeList()
         # Assure the list is still correct
         m_readList = UserListHandler(True)
-        m_readList.initialize('./testIds.txt')
+        m_readList.initialize('./tmp/testIds.txt')
         m_readList.loadList()
         userList = m_readList.getUserList()
         self.assertEqual(3, len(userList))

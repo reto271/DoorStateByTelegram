@@ -57,11 +57,11 @@ class DoorStatistics:
 
     def __readDoorFile(self):
         try:
-            with open('./doorStats.txt', 'r') as statsFile:
+            with open('./cnfg/doorStats.txt', 'r') as statsFile:
                 self.m_nrTotalDoorMovements = myUtils.tryInt(statsFile.read().rstrip())
         except IOError:
             self.m_nrTotalDoorMovements = 0
 
     def __storeDoorFile(self):
-        with open('./doorStats.txt', 'w') as f:
+        with open('./cnfg/doorStats.txt', 'w') as f:
             f.write(str(self.m_nrTotalDoorMovements) + '\n')

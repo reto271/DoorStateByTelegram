@@ -10,13 +10,13 @@ Sends messages about the door state by telegram
 1. Enter bot name, e.g. "This is my Bot"
 1. Enter bot Id, e.g. this_is_my_bot
 1. You will get a bot ID
-1. Write a file 'botId.txt' to the root directory of this project. Write your bot id to this file.
+1. Write a file 'cnfg/botId.txt' to the root directory of this project. Write your bot id to this file.
 
 The bot id suffice the following format.
 
     1234567890:aAbBcCdDeEfFgGhHiIjJkKlLmMoOpPqQrRs
 
-Write this ID only to the botId.txt.
+Write this ID only to the cnfg/botId.txt.
 
 ## Acknowledgments
 To create a bot and send some messages I found a useful description. See https://www.instructables.com/id/Set-up-Telegram-Bot-on-Raspberry-Pi/. Many thanks to NickL17.

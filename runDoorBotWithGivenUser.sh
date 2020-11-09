@@ -6,11 +6,12 @@
 #   /home/openhabian/git/DoorStateByTelegram/runDoorBotWithGivenUser.sh
 # Keep 'exit 0' at the end of the /etc/rc.local
 # ----------------------------------------------------------------------------------------------
-LOG_FILE=./boot.log
+LOG_FILE=./log/boot.log
 
 # Change into the project root directory
 SCRIPTDIR=$(readlink -f $(dirname "$0"))
 pushd "${SCRIPTDIR}" > /dev/null
+mkdir -p log
 
 #./Common/scripts/showSW_Version.sh > ${LOG_FILE}
 
