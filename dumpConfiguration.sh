@@ -2,15 +2,15 @@
 echo "*** Configuration ***"
 
 echo "--- Admin ---------"
-cat adminId.txt
+cat cnfg/adminId.txt
 echo ""
 
 echo "--- Registered Users ---------"
-cat registeredIds.txt
+cat cnfg/registeredIds.txt
 echo ""
 
 echo "--- Notifications Enabled for Users ---------"
-cat notificationIds.txt
+cat cnfg/notificationIds.txt
 echo ""
 
 echo "*** End of Configuration ***"

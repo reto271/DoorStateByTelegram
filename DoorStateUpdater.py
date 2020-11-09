@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 import random
 import datetime
@@ -36,6 +37,7 @@ def usageInformation(bot, userId):
                '   O: OPEN the door.\n' +
                '   E: ENABLE notifications.\n' +
                '   D: DISABLE notifications.\n' +
+               '   S: STATUS dump.\n' +
                '   H: print this HELP.\n' +
                '   Hw: print the HW version of the Raspberry Pi.\n' +
                    '\n(c) by reto271\n')
@@ -190,6 +192,13 @@ def getIntKey2(testDict, keyName, keySubName, defaultValue):
 
 
 # ------------------------------------------------------------------------------
+# Check and eventually create directory
+def createDirectory(dirName):
+    if not os.path.exists(dirName):
+        os.makedirs(dirName)
+
+
+# ------------------------------------------------------------------------------
 # Periodically polls the inputs and sends status updates
 def sendStateUpdate():
     if True == m_userNotificationList.isListEmpty():
@@ -207,14 +216,14 @@ def sendStateUpdate():
 
 
 # ------------------------------------------------------------------------------
-# Reads the telegram Id of this bot from botId.txt
+# Reads the telegram Id of this bot from cnfg/botId.txt
 def readTelegramId():
     try:
-        with open('./botId.txt', 'r') as idfile:
+        with open('./cnfg/botId.txt', 'r') as idfile:
             myId=idfile.read().rstrip()
     except IOError:
         myId=''
-        m_debugLogger.logText('File "botId.txt" not found.')
+        m_debugLogger.logText('File "cnfg/botId.txt" not found.')
     return myId
 
 
@@ -301,7 +310,7 @@ class AccesRequestHandler:
 
     def initialize(self):
         try:
-            with open('./adminId.txt', 'r') as idfile:
+            with open('./cnfg/adminId.txt', 'r') as idfile:
                 self.m_adminId = myUtils.tryInt(idfile.read().rstrip())
                 m_debugLogger.logText('Admin Id: ' + str(self.m_adminId))
         except IOError:
@@ -321,7 +330,7 @@ class AccesRequestHandler:
             self.addRequestToList(newUserId)
 
     def setNewAdmin(self, newUserId):
-        with open('./adminId.txt', 'w') as f:
+        with open('./cnfg/adminId.txt', 'w') as f:
             f.write(str(newUserId) + '\n')
             self.m_adminId = newUserId
             m_debugLogger.logText('New registered admin: ' + str(newUserId))
@@ -411,18 +420,21 @@ class DebugLogger:
 # ------------------------------------------------------------------------------
 # Main program
 
+createDirectory('log')
+createDirectory('cnfg')
+
 m_debugLogger = DebugLogger()
 m_doorStats = []
 
 m_telegramId = readTelegramId()
 
 m_userAccessList = UserListHandler(m_debugLogger)
-m_userAccessList.initialize('./registeredIds.txt')
+m_userAccessList.initialize('./cnfg/registeredIds.txt')
 m_userAccessList.loadList()
 #m_userAccessList.printList()
 
 m_userNotificationList = UserListHandler(m_debugLogger)
-m_userNotificationList.initialize('./notificationIds.txt')
+m_userNotificationList.initialize('./cnfg/notificationIds.txt')
 m_userNotificationList.loadList()
 #m_userNotificationList.printList()
 
@@ -438,7 +450,7 @@ m_doorMovementOutput = OutputPulseHandler()
 m_doorMovementOutput.initialize(24, False)
 
 if '' == m_telegramId:
-    m_debugLogger.logText('Internal telegram id not found. Create a file "botId.txt" containing the ID of the bot.')
+    m_debugLogger.logText('Internal telegram id not found. Create a file "cnfg/botId.txt" containing the ID of the bot.')
 else:
     bot = telepot.Bot(m_telegramId)
     m_doorStats = DoorStatistics(bot, m_debugLogger)

@@ -42,7 +42,7 @@ def main():
 
 def loadRegisteredUsers():
     userAccessList = UserListHandler(True)
-    userAccessList.initialize('./registeredIds.txt')
+    userAccessList.initialize('./cnfg/registeredIds.txt')
     userAccessList.loadList()
     return userAccessList
 
