@@ -36,6 +36,7 @@ def usageInformation(bot, userId):
                '   O: OPEN the door.\n' +
                '   E: ENABLE notifications.\n' +
                '   D: DISABLE notifications.\n' +
+               '   S: STATUS dump.\n' +
                '   H: print this HELP.\n' +
                '   Hw: print the HW version of the Raspberry Pi.\n' +
                    '\n(c) by reto271\n')
