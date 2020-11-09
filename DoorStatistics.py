@@ -100,11 +100,11 @@ class DoorStatistics:
 
     def run(self):
         now = datetime.now()
-        if ((0 == now.min) and (0 == now.hour) and (False == self.m_dumpedAlreadyToDay)):
+        if ((0 == now.minute) and (0 == now.hour) and (False == self.m_dumpedAlreadyToDay)):
             self.m_logMsg.setUserId(0)
             self.dumpState()
             self.m_dumpedAlreadyToDay = True
-        if ((1 == now.min) and (0 == now.hour)):
+        if ((1 == now.minute) and (0 == now.hour) and (True == self.m_dumpedAlreadyToDay)):
             self.m_dumpedAlreadyToDay = False
 
     def __readDoorFile(self):
