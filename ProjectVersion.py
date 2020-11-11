@@ -1,2 +1,9 @@
-# Format 'V01.09 B01' or 'V01.10'
-ProjectVersionNumber='V01.23 B01'
+def getVersionNumber():
+    try:
+        with open('VersionNumber.txt', 'r') as versionFile:
+            versionNumber = versionFile.read().rstrip()
+            versionFile.close()
+            return versionNumber
+    except:
+        print('File ' + str(logFileName) + ' not found.')
+        return ''

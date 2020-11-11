@@ -28,7 +28,7 @@ def main():
     if options.notRegUser is True:
         feedback = dumpRequestsOfNotRegisteredUsers(options.logFileName[0], registeredUserList)
     elif options.version is True:
-        print('Script version: ' + ProjectVersion.ProjectVersionNumber)
+        print('Script version: ' + ProjectVersion.getVersionNumber())
         feedback = 0
     elif options.date:
         feedback = dumpLogOfDay(options.logFileName[0], options.date)

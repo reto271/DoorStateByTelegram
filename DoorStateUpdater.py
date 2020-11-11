@@ -19,7 +19,7 @@ from DoorStatistics import DoorStatistics
 # Print software infos
 def startupInformation(userId, bot = []):
     helpText = str('\nReboot...\n\n' +
-                   'Garage Door Controller\n' + ProjectVersion.ProjectVersionNumber +
+                   'Garage Door Controller\n' + ProjectVersion.getVersionNumber() +
                    '\n(c) by reto271\n')
     m_debugLogger.logMultiLineText(userId, helpText)
     if bot:
@@ -28,7 +28,7 @@ def startupInformation(userId, bot = []):
 # ------------------------------------------------------------------------------
 # Print software infos
 def usageInformation(bot, userId):
-    helpText = str('Garage Door Controller - ' + ProjectVersion.ProjectVersionNumber +
+    helpText = str('Garage Door Controller - ' + ProjectVersion.getVersionNumber() +
                '\n\nSend the following messages to the bot:\n' +
                '   T: to get the current TIME.\n' +
 #               '   Reg: to REGISTER yourself. You will get state updates.\n' +

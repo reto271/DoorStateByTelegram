@@ -133,3 +133,5 @@ test-reports/
 log/
 cnfg/
 tmp/
+# the release script from the ReleaseScript project
+makeRelease.py

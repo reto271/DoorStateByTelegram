@@ -12,7 +12,6 @@ from time import sleep
 
 # My modules
 import myUtils
-import ProjectVersion
 from UserListHandler import UserListHandler
 from DumpToLogAndUser import DumpToLogAndUser
 

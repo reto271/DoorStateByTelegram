@@ -6,7 +6,6 @@ from datetime import date
 
 # My modules
 import myUtils
-import ProjectVersion
 
 
 class ValidateDate:

@@ -8,7 +8,6 @@ import telepot
 
 # My modules
 import myUtils
-import ProjectVersion
 from UserListHandler import UserListHandler
 
 
