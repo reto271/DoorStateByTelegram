@@ -14,6 +14,7 @@ import myUtils
 import ProjectVersion
 from UserListHandler import UserListHandler
 from DoorStatistics import DoorStatistics
+from ConfigHandler import ConfigHandler
 
 # ------------------------------------------------------------------------------
 # Print software infos
@@ -247,10 +248,11 @@ def getRaspberryPi_HW_Version():
 # Boolean input signal encapsulation
 class BooleanSignalInput:
 
-    def __init__(self):
+    def __init__(self, invertSignal):
         self.m_state = False
         self.m_lastState = False
         self.m_botton = []
+        self.m_invertSignal = invertSignal
 
     def initialize(self, gpioNumber):
         self.m_button = Button(gpioNumber)
@@ -259,9 +261,9 @@ class BooleanSignalInput:
 
     def sample(self):
         if self.m_button.is_pressed:
-            self.m_state = True
+            self.m_state = (False == self.m_invertSignal)
         else:
-            self.m_state = False
+            self.m_state = (True == self.m_invertSignal)
 
     def isChanged(self):
         didChange = self.m_state != self.m_lastState
@@ -423,51 +425,58 @@ class DebugLogger:
 createDirectory('log')
 createDirectory('cnfg')
 
+
+
 m_debugLogger = DebugLogger()
 m_doorStats = []
 
-m_telegramId = readTelegramId()
-
-m_userAccessList = UserListHandler(m_debugLogger)
-m_userAccessList.initialize('./cnfg/registeredIds.txt')
-m_userAccessList.loadList()
-#m_userAccessList.printList()
-
-m_userNotificationList = UserListHandler(m_debugLogger)
-m_userNotificationList.initialize('./cnfg/notificationIds.txt')
-m_userNotificationList.loadList()
-#m_userNotificationList.printList()
-
-m_accessRequestHandler = AccesRequestHandler()
-m_accessRequestHandler.initialize()
-
-# Use GPIO 23
-m_doorStateInput = BooleanSignalInput()
-m_doorStateInput.initialize(23)
-
-# Use GPIO 24
-m_doorMovementOutput = OutputPulseHandler()
-m_doorMovementOutput.initialize(24, False)
-
-if '' == m_telegramId:
-    m_debugLogger.logText('Internal telegram id not found. Create a file "cnfg/botId.txt" containing the ID of the bot.')
+m_cnfgHdl = ConfigHandler('cnfg/config.txt', m_debugLogger)
+if False == m_cnfgHdl.optionFileFound():
+    m_debugLogger.logText('Config file not found (cnfg/config.txt)')
 else:
-    bot = telepot.Bot(m_telegramId)
-    m_doorStats = DoorStatistics(bot, m_debugLogger)
-    bot.message_loop(handle)
 
-    userList = m_userNotificationList.getUserList()
-    for userId in userList:
-        startupInformation(userId, bot)
-        m_doorStats.dumpState(userId)
-    startupInformation(0)               # To the log, if there is no observer.
-    m_doorStats.dumpState()
+    m_telegramId = readTelegramId()
 
-    while 1:
-        time.sleep(1)
-        m_doorStateInput.sample()
-        m_doorMovementOutput.processOutput()
-        if (True == m_doorStateInput.isChanged()):
-            sendStateUpdate()
-            m_doorStats.addDoorMovement()
-        m_doorStats.run()
+    m_userAccessList = UserListHandler(m_debugLogger)
+    m_userAccessList.initialize('./cnfg/registeredIds.txt')
+    m_userAccessList.loadList()
+    #m_userAccessList.printList()
+
+    m_userNotificationList = UserListHandler(m_debugLogger)
+    m_userNotificationList.initialize('./cnfg/notificationIds.txt')
+    m_userNotificationList.loadList()
+    #m_userNotificationList.printList()
+
+    m_accessRequestHandler = AccesRequestHandler()
+    m_accessRequestHandler.initialize()
+
+    # Use GPIO 23
+    m_doorStateInput = BooleanSignalInput(m_cnfgHdl.getOptionBool('InvertInput'))
+    m_doorStateInput.initialize(23)
+
+    # Use GPIO 24
+    m_doorMovementOutput = OutputPulseHandler()
+    m_doorMovementOutput.initialize(24, False)
+
+    if '' == m_telegramId:
+        m_debugLogger.logText('Internal telegram id not found. Create a file "cnfg/botId.txt" containing the ID of the bot.')
+    else:
+        bot = telepot.Bot(m_telegramId)
+        m_doorStats = DoorStatistics(bot, m_debugLogger)
+        bot.message_loop(handle)
+
+        userList = m_userNotificationList.getUserList()
+        for userId in userList:
+            startupInformation(userId, bot)
+            m_doorStats.dumpState(userId)
+        startupInformation(0)               # To the log, if there is no observer.
+        m_doorStats.dumpState()
+
+        while 1:
+            time.sleep(1)
+            m_doorStateInput.sample()
+            m_doorMovementOutput.processOutput()
+            if (True == m_doorStateInput.isChanged()):
+                sendStateUpdate()
+                m_doorStats.addDoorMovement()
+            m_doorStats.run()
