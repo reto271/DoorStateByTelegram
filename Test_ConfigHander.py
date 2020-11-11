@@ -24,6 +24,14 @@ class Test_ConfigHandler(unittest.TestCase):
         option = self.m_cnfgHdl.getOptionBool('InvertInput')
         self.assertEqual(True, option)
 
+    def test_missingFile(self):
+        cnfgHdl = ConfigHandler('cnfg/config_not_exist.txt')
+        self.assertEqual(False, cnfgHdl.optionFileFound())
+
+    def test_existingFile(self):
+        cnfgHdl = ConfigHandler('cnfg/config.txt')
+        self.assertEqual(True, cnfgHdl.optionFileFound())
+
 
 if __name__ == '__main__':
     import xmlrunner

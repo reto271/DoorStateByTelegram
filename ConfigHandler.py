@@ -12,6 +12,12 @@ class ConfigHandler:
         self.__readFile()
 
 
+    def optionFileFound(self):
+        for section in self.m_config.sections():
+            if 'DoorConfig' == section:
+                return True
+        return False
+
     def getOption(self, optionName):
         return self.m_config['DoorConfig'][optionName]
 
