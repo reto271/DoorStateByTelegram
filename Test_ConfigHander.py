@@ -9,9 +9,15 @@ class Test_ConfigHandler(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
         self.m_cnfgHdl = []
+        if not os.path.exists('./tmp'):
+            os.makedirs('./tmp')
+        if os.path.exists('./tmp/config.txt'):
+            os.remove('./tmp/config.txt')
+        with open('./tmp/config.txt', 'w') as f:
+            f.write('[DoorConfig]\nInvertInput = True\nDummyProperty=7')
 
     def setUp(self):
-        self.m_cnfgHdl = ConfigHandler('cnfg/config.txt')
+        self.m_cnfgHdl = ConfigHandler('tmp/config.txt')
 
     def tearDown(self):
         pass
@@ -25,11 +31,11 @@ class Test_ConfigHandler(unittest.TestCase):
         self.assertEqual(True, option)
 
     def test_missingFile(self):
-        cnfgHdl = ConfigHandler('cnfg/config_not_exist.txt')
+        cnfgHdl = ConfigHandler('tmp/config_not_exist.txt')
         self.assertEqual(False, cnfgHdl.optionFileFound())
 
     def test_existingFile(self):
-        cnfgHdl = ConfigHandler('cnfg/config.txt')
+        cnfgHdl = ConfigHandler('tmp/config.txt')
         self.assertEqual(True, cnfgHdl.optionFileFound())
 
 
